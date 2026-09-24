@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" fill="none">
+  <defs>
+    <linearGradient id="p-grad-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="50%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="p-grad-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <linearGradient id="p-grad-text" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E0E7FF"/>
+    </linearGradient>
+    <filter id="p-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Logo Mark centered at (120, 48) -->
+  <g transform="translate(85, 8)">
+    <path d="M35 8 L59 22 V50 L35 64 L11 50 V22 Z" fill="#6366F1" opacity="0.15" />
+    <path d="M35 10 L56 22 L35 34 L14 22 Z" fill="url(#p-grad-primary)" opacity="0.95" />
+    <path d="M14 22 L35 34 V58 L14 46 Z" fill="url(#p-grad-primary)" opacity="0.75" />
+    <path d="M35 34 L56 22 V37 L35 49 Z" fill="url(#p-grad-primary)" opacity="0.85" />
+    <path d="M35 49 L56 37 V49 L35 61 Z" fill="url(#p-grad-gold)" filter="url(#p-glow)" />
+    <circle cx="35" cy="34" r="3.5" fill="#FFFFFF" />
+  </g>
+
+  <!-- Typography -->
+  <text x="120" y="110" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-weight="800" font-size="24" fill="url(#p-grad-text)" letter-spacing="-0.5" text-anchor="middle">SmartStock</text>
+  
+  <!-- Pill Subtitle Badge -->
+  <rect x="52" y="125" width="136" height="22" rx="11" fill="rgba(99, 102, 241, 0.15)" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1" />
+  <text x="120" y="139" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-weight="700" font-size="9" fill="#10B981" letter-spacing="1.5" text-anchor="middle">MOBILE RETAIL OS</text>
+</svg>

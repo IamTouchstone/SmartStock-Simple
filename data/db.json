@@ -1,0 +1,1190 @@
+{
+  "organizations": [
+    {
+      "id": "ORG-DEMO-001",
+      "org_name": "SmartStock Global Retail",
+      "admin_email": "admin@smartstock.io",
+      "password": "password123",
+      "industry": "Electronics & Smart Home",
+      "created_at": "2026-08-13T12:27:33.685Z"
+    },
+    {
+      "id": "ORG-9176",
+      "org_name": "Apex Supermarkets Corp",
+      "admin_email": "org_1786624184459@apexretail.com",
+      "password": "securePassword456",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "692840",
+      "verification_token": "VT-1786624184461",
+      "created_at": "2026-08-13T12:29:44.461Z"
+    },
+    {
+      "id": "ORG-2431",
+      "org_name": "Acme Org 2855",
+      "admin_email": "admin_2855@acme.com",
+      "password": "password123",
+      "industry": "General Retail",
+      "is_verified": false,
+      "verification_code": "741173",
+      "verification_token": "VT-1786624193968",
+      "created_at": "2026-08-13T12:29:53.968Z"
+    },
+    {
+      "id": "ORG-7402",
+      "org_name": "Apex Supermarkets Corp",
+      "admin_email": "org_1786624376884@apexretail.com",
+      "password": "securePassword456",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "695512",
+      "verification_token": "VT-1786624376885",
+      "created_at": "2026-08-13T12:32:56.885Z"
+    },
+    {
+      "id": "ORG-1691",
+      "org_name": "Apex Supermarkets Corp",
+      "admin_email": "org_1786624685816@apexretail.com",
+      "password": "securePassword456",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "181611",
+      "verification_token": "VT-1786624685817",
+      "created_at": "2026-08-13T12:38:05.817Z"
+    },
+    {
+      "id": "ORG-5699",
+      "org_name": "Apex Supermarkets Corp",
+      "admin_email": "org_1786624952479@apexretail.com",
+      "password": "securePassword456",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "432299",
+      "verification_token": "VT-1786624952480",
+      "created_at": "2026-08-13T12:42:32.480Z"
+    },
+    {
+      "id": "ORG-3782",
+      "org_name": "Apex Supermarkets Corp",
+      "admin_email": "org_1786625222005@apexretail.com",
+      "password": "securePassword456",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "731593",
+      "verification_token": "VT-1786625222007",
+      "created_at": "2026-08-13T12:47:02.007Z"
+    },
+    {
+      "id": "ORG-1762",
+      "org_name": "Apex Supermarkets Corp",
+      "admin_email": "org_1786625500802@apexretail.com",
+      "password": "securePassword456",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "972160",
+      "verification_token": "VT-1786625500804",
+      "created_at": "2026-08-13T12:51:40.804Z"
+    },
+    {
+      "id": "ORG-7714",
+      "org_name": "Apex Supermarkets Corp",
+      "admin_email": "org_1786625699009@apexretail.com",
+      "password": "securePassword456",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "624636",
+      "verification_token": "VT-1786625699011",
+      "created_at": "2026-08-13T12:54:59.011Z"
+    },
+    {
+      "id": "ORG-7170",
+      "org_name": "Apext you",
+      "admin_email": "test@gmail.com",
+      "password": "12345678",
+      "industry": "Electronics & Smart Home",
+      "is_verified": false,
+      "verification_code": "478676",
+      "verification_token": "VT-1786746337847",
+      "created_at": "2026-08-14T22:25:37.847Z"
+    },
+    {
+      "id": "ORG-3995",
+      "org_name": "Test Org",
+      "admin_email": "admin@test.com",
+      "password": "passwordpassword",
+      "industry": "Electronics & Smart Home",
+      "is_verified": false,
+      "verification_code": "852708",
+      "verification_token": "VT-1786772677076",
+      "created_at": "2026-08-15T05:44:37.076Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "USR-ADMIN-001",
+      "org_id": "ORG-DEMO-001",
+      "name": "Global Owner",
+      "email": "admin@smartstock.io",
+      "password": "password123",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:27:33.686Z"
+    },
+    {
+      "id": "USR-CADMIN-001",
+      "org_id": "ORG-DEMO-001",
+      "name": "Global Admin",
+      "email": "coadmin@smartstock.io",
+      "password": "password123",
+      "role": "Admin",
+      "created_by": "USR-ADMIN-001",
+      "created_at": "2026-08-13T12:27:33.686Z"
+    },
+    {
+      "id": "USR-MGR-001",
+      "org_id": "ORG-DEMO-001",
+      "name": "Global Manager",
+      "email": "manager@smartstock.io",
+      "password": "password123",
+      "role": "Manager",
+      "created_by": "USR-CADMIN-001",
+      "created_at": "2026-08-13T12:27:33.686Z"
+    },
+    {
+      "id": "USR-SUP-001",
+      "org_id": "ORG-DEMO-001",
+      "name": "Global Supervisor",
+      "email": "supervisor@smartstock.io",
+      "password": "password123",
+      "role": "Supervisor",
+      "created_by": "USR-CADMIN-001",
+      "created_at": "2026-08-13T12:27:33.686Z"
+    },
+    {
+      "id": "USR-STF-001",
+      "org_id": "ORG-DEMO-001",
+      "name": "Global Staff",
+      "email": "staff@smartstock.io",
+      "password": "password123",
+      "role": "Staff",
+      "created_by": "USR-MGR-001",
+      "created_at": "2026-08-13T12:27:33.686Z"
+    },
+    {
+      "id": "USR-LOCAL-1786624184460-5693",
+      "firebase_uid": "USR-LOCAL-1786624184460-5693",
+      "org_id": "ORG-9176",
+      "name": "Admin User",
+      "email": "org_1786624184459@apexretail.com",
+      "password": "securePassword456",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:29:44.461Z"
+    },
+    {
+      "id": "USR-LOCAL-1786624193968-8378",
+      "firebase_uid": "USR-LOCAL-1786624193968-8378",
+      "org_id": "ORG-2431",
+      "name": "Admin User",
+      "email": "admin_2855@acme.com",
+      "password": "password123",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:29:53.968Z"
+    },
+    {
+      "id": "USR-LOCAL-1786624376884-7331",
+      "firebase_uid": "USR-LOCAL-1786624376884-7331",
+      "org_id": "ORG-7402",
+      "name": "Admin User",
+      "email": "org_1786624376884@apexretail.com",
+      "password": "securePassword456",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:32:56.885Z"
+    },
+    {
+      "id": "USR-LOCAL-1786624685816-5228",
+      "firebase_uid": "USR-LOCAL-1786624685816-5228",
+      "org_id": "ORG-1691",
+      "name": "Admin User",
+      "email": "org_1786624685816@apexretail.com",
+      "password": "securePassword456",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:38:05.817Z"
+    },
+    {
+      "id": "USR-LOCAL-1786624952479-6287",
+      "firebase_uid": "USR-LOCAL-1786624952479-6287",
+      "org_id": "ORG-5699",
+      "name": "Admin User",
+      "email": "org_1786624952479@apexretail.com",
+      "password": "securePassword456",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:42:32.480Z"
+    },
+    {
+      "id": "USR-LOCAL-1786625222006-5805",
+      "firebase_uid": "USR-LOCAL-1786625222006-5805",
+      "org_id": "ORG-3782",
+      "name": "Admin User",
+      "email": "org_1786625222005@apexretail.com",
+      "password": "securePassword456",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:47:02.007Z"
+    },
+    {
+      "id": "USR-LOCAL-1786625500803-9360",
+      "firebase_uid": "USR-LOCAL-1786625500803-9360",
+      "org_id": "ORG-1762",
+      "name": "Admin User",
+      "email": "org_1786625500802@apexretail.com",
+      "password": "securePassword456",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:51:40.804Z"
+    },
+    {
+      "id": "USR-LOCAL-1786625699010-4676",
+      "firebase_uid": "USR-LOCAL-1786625699010-4676",
+      "org_id": "ORG-7714",
+      "name": "Admin User",
+      "email": "org_1786625699009@apexretail.com",
+      "password": "securePassword456",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-13T12:54:59.011Z"
+    },
+    {
+      "id": "scgSgeI1ZufTWU20VU1nz5Cfp6H2",
+      "firebase_uid": "scgSgeI1ZufTWU20VU1nz5Cfp6H2",
+      "org_id": "ORG-7170",
+      "name": "Admin User",
+      "email": "test@gmail.com",
+      "password": "12345678",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-14T22:25:37.847Z"
+    },
+    {
+      "id": "F9nXpgdM2QOCDSyEw8bw76GBKlq2",
+      "firebase_uid": "F9nXpgdM2QOCDSyEw8bw76GBKlq2",
+      "org_id": "ORG-3995",
+      "name": "Admin User",
+      "email": "admin@test.com",
+      "password": "passwordpassword",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-08-15T05:44:37.076Z"
+    }
+  ],
+  "products": [
+    {
+      "org_id": "ORG-2431",
+      "sku": "BEV-001",
+      "name": "Sparkling Energy Water",
+      "category": "Premium Beverages",
+      "volume_per_unit": 0.0005,
+      "cost": 1.2,
+      "price": 2.99,
+      "safety_stock": 50,
+      "min_reorder_level": 100,
+      "lead_time": 3,
+      "supplier_name": "Beverage Wholesalers"
+    }
+  ],
+  "inventory": [
+    {
+      "org_id": "ORG-2431",
+      "sku": "BEV-001",
+      "branch": "Main Warehouse",
+      "quantity": 200
+    },
+    {
+      "org_id": "ORG-2431",
+      "sku": "BEV-001",
+      "branch": "North Branch",
+      "quantity": 50
+    },
+    {
+      "org_id": "ORG-2431",
+      "sku": "BEV-001",
+      "branch": "South Branch",
+      "quantity": 80
+    }
+  ],
+  "sales": [],
+  "redistributions": [],
+  "customer_requests": [],
+  "purchase_list": [],
+  "alert_logs": [],
+  "settings": {
+    "ORG-DEMO-001": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": ""
+    },
+    "ORG-9176": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": "",
+      "iclass_sync_enabled": false,
+      "iclass_server_host": "SERVER",
+      "iclass_db_name": "ValueMartDB",
+      "iclass_db_user": "sa",
+      "iclass_db_password": "iclassadmin",
+      "iclass_login_username": "AMCE.BERNIE"
+    },
+    "ORG-2431": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": "",
+      "iclass_sync_enabled": false,
+      "iclass_server_host": "SERVER",
+      "iclass_db_name": "ValueMartDB",
+      "iclass_db_user": "sa",
+      "iclass_db_password": "iclassadmin",
+      "iclass_login_username": "AMCE.BERNIE"
+    },
+    "ORG-7402": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": "",
+      "iclass_sync_enabled": false,
+      "iclass_server_host": "SERVER",
+      "iclass_db_name": "ValueMartDB",
+      "iclass_db_user": "sa",
+      "iclass_db_password": "iclassadmin",
+      "iclass_login_username": "AMCE.BERNIE"
+    },
+    "ORG-1691": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": "",
+      "iclass_sync_enabled": false,
+      "iclass_server_host": "SERVER",
+      "iclass_db_name": "ValueMartDB",
+      "iclass_db_user": "sa",
+      "iclass_db_password": "iclassadmin",
+      "iclass_login_username": "AMCE.BERNIE"
+    },
+    "ORG-5699": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": "",
+      "iclass_sync_enabled": false,
+      "iclass_server_host": "SERVER",
+      "iclass_db_name": "ValueMartDB",
+      "iclass_db_user": "sa",
+      "iclass_db_password": "iclassadmin",
+      "iclass_login_username": "AMCE.BERNIE"
+    },
+    "ORG-3782": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": "",
+      "iclass_sync_enabled": false,
+      "iclass_server_host": "SERVER",
+      "iclass_db_name": "ValueMartDB",
+      "iclass_db_user": "sa",
+      "iclass_db_password": "iclassadmin",
+      "iclass_login_username": "AMCE.BERNIE"
+    },
+    "ORG-1762": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": "",
+      "iclass_sync_enabled": false,
+      "iclass_server_host": "SERVER",
+      "iclass_db_name": "ValueMartDB",
+      "iclass_db_user": "sa",
+      "iclass_db_password": "iclassadmin",
+      "iclass_login_username": "AMCE.BERNIE"
+    },
+    "ORG-7714": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5,
+      "alert_whatsapp_enabled": false,
+      "alert_whatsapp_phone": "",
+      "alert_email_enabled": false,
+      "alert_email_address": "",
+      "alert_telegram_enabled": false,
+      "alert_telegram_chatid": "",
+      "iclass_sync_enabled": false,
+      "iclass_server_host": "SERVER",
+      "iclass_db_name": "ValueMartDB",
+      "iclass_db_user": "sa",
+      "iclass_db_password": "iclassadmin",
+      "iclass_login_username": "AMCE.BERNIE"
+    },
+    "ORG-7170": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
+    },
+    "ORG-3995": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
+    }
+  },
+  "suppliers": [],
+  "purchaseOrders": [],
+  "invoices": [],
+  "categories": [
+    {
+      "org_id": "ORG-DEMO-001",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-9176",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-9176",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-9176",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-9176",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-9176",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-9176",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-2431",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-2431",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-2431",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-2431",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-2431",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-2431",
+      "name": "Premium Beverages"
+    },
+    {
+      "org_id": "ORG-7402",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-7402",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-7402",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-7402",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-7402",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-7402",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-1691",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-1691",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-1691",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-1691",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-1691",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-1691",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-5699",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-5699",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-5699",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-5699",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-5699",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-5699",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-3782",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-3782",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-3782",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-3782",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-3782",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-3782",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-1762",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-1762",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-1762",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-1762",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-1762",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-1762",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-7714",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-7714",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-7714",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-7714",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-7714",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-7714",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-7170",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-7170",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-7170",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-7170",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-7170",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-3995",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-3995",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-3995",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-3995",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-3995",
+      "name": "General Retail"
+    }
+  ],
+  "activity_logs": [
+    {
+      "id": "LOG-4470",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-13",
+      "time": "13:29:44",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-6042",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1786624184460-5693",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Supermarkets Corp and Owner account",
+      "date": "2026-08-13",
+      "time": "13:29:44",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-3464",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1786624193968-8378",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Acme Org 2855 and Owner account",
+      "date": "2026-08-13",
+      "time": "13:29:53",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-5600",
+      "org_id": "ORG-2431",
+      "user_id": "USR-LOCAL-1786624193968-8378",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered product BEV-001 to catalog: Sparkling Energy Water",
+      "date": "2026-08-13",
+      "time": "13:29:53",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-8385",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-13",
+      "time": "13:32:56",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-2646",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1786624376884-7331",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Supermarkets Corp and Owner account",
+      "date": "2026-08-13",
+      "time": "13:32:56",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-2876",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-13",
+      "time": "13:38:05",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-2774",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1786624685816-5228",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Supermarkets Corp and Owner account",
+      "date": "2026-08-13",
+      "time": "13:38:05",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-5466",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-13",
+      "time": "13:42:32",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-5856",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1786624952479-6287",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Supermarkets Corp and Owner account",
+      "date": "2026-08-13",
+      "time": "13:42:32",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-9821",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-13",
+      "time": "13:47:02",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-4994",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1786625222006-5805",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Supermarkets Corp and Owner account",
+      "date": "2026-08-13",
+      "time": "13:47:02",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-5428",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-13",
+      "time": "13:51:40",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-1482",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1786625500803-9360",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Supermarkets Corp and Owner account",
+      "date": "2026-08-13",
+      "time": "13:51:40",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-6720",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-13",
+      "time": "13:54:59",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-6472",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1786625699010-4676",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Supermarkets Corp and Owner account",
+      "date": "2026-08-13",
+      "time": "13:54:59",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-7018",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "scgSgeI1ZufTWU20VU1nz5Cfp6H2",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apext you and Owner account",
+      "date": "2026-08-14",
+      "time": "23:25:37",
+      "branch": "Central Hub",
+      "device": "Mozilla/5.0"
+    },
+    {
+      "id": "LOG-9377",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "scgSgeI1ZufTWU20VU1nz5Cfp6H2",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-15",
+      "time": "06:22:26",
+      "branch": "Central Hub",
+      "device": "Mozilla/5.0"
+    },
+    {
+      "id": "LOG-9030",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "F9nXpgdM2QOCDSyEw8bw76GBKlq2",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Test Org and Owner account",
+      "date": "2026-08-15",
+      "time": "06:44:37",
+      "branch": "Central Hub",
+      "device": "Mozilla/5.0"
+    },
+    {
+      "id": "LOG-4955",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-15",
+      "time": "08:06:57",
+      "branch": "Central Hub",
+      "device": "Mozilla/5.0"
+    },
+    {
+      "id": "LOG-6398",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "scgSgeI1ZufTWU20VU1nz5Cfp6H2",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-17",
+      "time": "03:20:22",
+      "branch": "Central Hub",
+      "device": "Mozilla/5.0"
+    },
+    {
+      "id": "LOG-3993",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "scgSgeI1ZufTWU20VU1nz5Cfp6H2",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-08-17",
+      "time": "14:56:39",
+      "branch": "Central Hub",
+      "device": "Mozilla/5.0"
+    }
+  ],
+  "email_logs": [
+    {
+      "id": "EMAIL-LOG-1786624184461-1",
+      "org_id": "ORG-9176",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Supermarkets Corp (org_1786624184459@apexretail.com)",
+      "timestamp": "2026-08-13T12:29:44.461Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624184461-2",
+      "org_id": "ORG-9176",
+      "type": "USER_VERIFICATION",
+      "to": "org_1786624184459@apexretail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 692840",
+      "timestamp": "2026-08-13T12:29:44.461Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624193968-1",
+      "org_id": "ORG-2431",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Acme Org 2855 (admin_2855@acme.com)",
+      "timestamp": "2026-08-13T12:29:53.968Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624193968-2",
+      "org_id": "ORG-2431",
+      "type": "USER_VERIFICATION",
+      "to": "admin_2855@acme.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 741173",
+      "timestamp": "2026-08-13T12:29:53.968Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624376885-1",
+      "org_id": "ORG-7402",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Supermarkets Corp (org_1786624376884@apexretail.com)",
+      "timestamp": "2026-08-13T12:32:56.885Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624376885-2",
+      "org_id": "ORG-7402",
+      "type": "USER_VERIFICATION",
+      "to": "org_1786624376884@apexretail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 695512",
+      "timestamp": "2026-08-13T12:32:56.885Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624685817-1",
+      "org_id": "ORG-1691",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Supermarkets Corp (org_1786624685816@apexretail.com)",
+      "timestamp": "2026-08-13T12:38:05.817Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624685817-2",
+      "org_id": "ORG-1691",
+      "type": "USER_VERIFICATION",
+      "to": "org_1786624685816@apexretail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 181611",
+      "timestamp": "2026-08-13T12:38:05.817Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624952480-1",
+      "org_id": "ORG-5699",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Supermarkets Corp (org_1786624952479@apexretail.com)",
+      "timestamp": "2026-08-13T12:42:32.480Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786624952480-2",
+      "org_id": "ORG-5699",
+      "type": "USER_VERIFICATION",
+      "to": "org_1786624952479@apexretail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 432299",
+      "timestamp": "2026-08-13T12:42:32.480Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786625222007-1",
+      "org_id": "ORG-3782",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Supermarkets Corp (org_1786625222005@apexretail.com)",
+      "timestamp": "2026-08-13T12:47:02.007Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786625222007-2",
+      "org_id": "ORG-3782",
+      "type": "USER_VERIFICATION",
+      "to": "org_1786625222005@apexretail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 731593",
+      "timestamp": "2026-08-13T12:47:02.007Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786625500804-1",
+      "org_id": "ORG-1762",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Supermarkets Corp (org_1786625500802@apexretail.com)",
+      "timestamp": "2026-08-13T12:51:40.804Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786625500804-2",
+      "org_id": "ORG-1762",
+      "type": "USER_VERIFICATION",
+      "to": "org_1786625500802@apexretail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 972160",
+      "timestamp": "2026-08-13T12:51:40.804Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786625699011-1",
+      "org_id": "ORG-7714",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Supermarkets Corp (org_1786625699009@apexretail.com)",
+      "timestamp": "2026-08-13T12:54:59.011Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786625699011-2",
+      "org_id": "ORG-7714",
+      "type": "USER_VERIFICATION",
+      "to": "org_1786625699009@apexretail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 624636",
+      "timestamp": "2026-08-13T12:54:59.011Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786746337847-1",
+      "org_id": "ORG-7170",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apext you (test@gmail.com)",
+      "timestamp": "2026-08-14T22:25:37.847Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786746337847-2",
+      "org_id": "ORG-7170",
+      "type": "USER_VERIFICATION",
+      "to": "test@gmail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 478676",
+      "timestamp": "2026-08-14T22:25:37.847Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786772677076-1",
+      "org_id": "ORG-3995",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Test Org (admin@test.com)",
+      "timestamp": "2026-08-15T05:44:37.076Z"
+    },
+    {
+      "id": "EMAIL-LOG-1786772677076-2",
+      "org_id": "ORG-3995",
+      "type": "USER_VERIFICATION",
+      "to": "admin@test.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 852708",
+      "timestamp": "2026-08-15T05:44:37.076Z"
+    }
+  ],
+  "expiry_reports": [],
+  "stock_adjustments": []
+}

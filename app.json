@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "SmartStock",
+    "slug": "smartstock",
+    "package": "com.smartstock.app",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "platforms": [
+      "android"
+    ],
+    "sdkVersion": "52.0.0",
+    "icon": "./public/icons/icon-512.png",
+    "scheme": "smartstock",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./public/icons/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#090D16"
+    },
+    "android": {
+      "package": "com.smartstock.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./public/icons/adaptive-icon.png",
+        "backgroundColor": "#090D16"
+      },
+      "permissions": [
+        "CAMERA"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow SmartStock to access your camera."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "58a4a24b-eb31-4876-a59e-accdb265a385"
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 40" fill="none">
+  <defs>
+    <linearGradient id="h-grad-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="50%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="h-grad-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Icon Symbol -->
+  <g transform="translate(4, 3)">
+    <path d="M17 3 L31 11 L17 19 L3 11 Z" fill="url(#h-grad-primary)" opacity="0.95" />
+    <path d="M3 11 L17 19 V33 L3 25 Z" fill="url(#h-grad-primary)" opacity="0.75" />
+    <path d="M17 19 L31 11 V21 L17 29 Z" fill="url(#h-grad-primary)" opacity="0.85" />
+    <path d="M17 29 L31 21 V27 L17 35 Z" fill="url(#h-grad-gold)" />
+    <circle cx="17" cy="19" r="2.5" fill="#FFFFFF" />
+  </g>
+
+  <!-- Typography -->
+  <text x="44" y="24" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-weight="800" font-size="17" fill="#0F172A" letter-spacing="-0.4">SmartStock</text>
+  <text x="44" y="33" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-weight="700" font-size="6.5" fill="#10B981" letter-spacing="1.2">MOBILE OS</text>
+</svg>

@@ -1,0 +1,30 @@
+# Expo
+.expo/
+dist/
+web-build/
+.expo-shared/
+
+# APK / AAB - NEVER PUSH AGAIN
+*.apk
+*.aab
+*.ipa
+
+# Node
+node_modules/
+npm-debug.*
+*.log
+
+# Secrets
+.env
+.env.local
+serviceAccountKey.json
+google-services.json
+
+# Firebase & Vercel
+.firebase/
+.vercel/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
