@@ -2,41 +2,28 @@ name: Build & Release SmartStock APK
 
 on:
   push:
-    branches: [ main ]
-
-permissions:
-  contents: write
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: 24
           cache: 'npm'
-      - run: npm ci
-
-      - uses: expo/expo-github-action@v8
+      
+      - name: Install deps
+        run: npm ci
+      
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
         with:
           eas-version: latest
-          token: ${{ secrets.EAS_TOKEN }}
-
-      - name: Build with EAS
-        run: eas build --platform android --profile preview --non-interactive --wait
-
-      - name: Get Build URL
-        run: eas build:list --platform android --limit 1 --json > build.json
-
-      - name: Download APK
-        run: |
-          URL=$(jq -r '.[0].artifacts.buildUrl' build.json)
-          curl -L "$URL" -o app-release.apk
-        shell: bash
-
-      - uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v1.0.${{ github.run_number }}
-          files: app-release.apk
+          token: ${{ secrets.EXPO_TOKEN }}
+      
+      - name: Build APK with EAS
+        run: eas build --platform android --profile preview --non-interactive --no-wait
