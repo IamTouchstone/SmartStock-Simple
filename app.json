@@ -8,7 +8,7 @@
     "platforms": [
       "android"
     ],
-    "sdkVersion": "52.0.0",
+    "sdkVersion": "57.0.0",
     "icon": "./public/icons/icon-512.png",
     "scheme": "smartstock",
     "userInterfaceStyle": "automatic",
@@ -34,7 +34,12 @@
         {
           "cameraPermission": "Allow SmartStock to access your camera."
         }
-      ]
+      ],
+      "expo-barcode-scanner",
+      "expo-status-bar",
+      "expo-splash-screen",
+      "expo-build-properties",
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {
