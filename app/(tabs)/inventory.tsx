@@ -26,6 +26,7 @@ export default function InventoryScreen() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [search, setSearch] = useState('');
   const [userOrgId, setUserOrgId] = useState('ORG-DEMO-001');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
 
   const loadData = useCallback(async () => {
     try {
@@ -36,6 +37,7 @@ export default function InventoryScreen() {
       }
       const orgId = user.org_id || 'ORG-DEMO-001';
       setUserOrgId(orgId);
+      setCurrencySymbol(user.currency_symbol || '$');
       const items = await getInventory(orgId);
       setProducts(items);
     } catch (e) {
@@ -117,7 +119,7 @@ export default function InventoryScreen() {
 
         <View style={styles.cardBottom}>
           <Text style={styles.priceText}>
-            Price: <Text style={styles.priceValue}>${item.price.toFixed(2)}</Text>
+            Price: <Text style={styles.priceValue}>{currencySymbol}{item.price.toFixed(2)}</Text>
           </Text>
           <TouchableOpacity 
             style={styles.transferButton}

@@ -117,6 +117,83 @@
       "verification_code": "852708",
       "verification_token": "VT-1786772677076",
       "created_at": "2026-08-15T05:44:37.076Z"
+    },
+    {
+      "id": "ORG-6377",
+      "org_name": "Apex Supermarkets Corp",
+      "admin_email": "org_1792625169355@apexretail.com",
+      "password": "securePassword456",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "447057",
+      "verification_token": "VT-1792625169358",
+      "created_at": "2026-10-21T23:26:09.358Z"
+    },
+    {
+      "id": "ORG-8371",
+      "org_name": "Fairprice Retailers",
+      "admin_email": "client_admin_1792625178542@fairprice.com",
+      "password": "password123",
+      "industry": "Supermarket & Grocery",
+      "is_verified": false,
+      "verification_code": "758166",
+      "verification_token": "VT-1792625178560",
+      "created_at": "2026-10-21T23:26:18.560Z"
+    },
+    {
+      "id": "ORG-3523",
+      "org_name": "SmartStock Owner Corp",
+      "admin_email": "bernieamce@gmail.com",
+      "password": "ownerpassword123",
+      "industry": "Electronics & Smart Home",
+      "is_verified": false,
+      "verification_code": "651468",
+      "verification_token": "VT-1792625178606",
+      "created_at": "2026-10-21T23:26:18.606Z"
+    },
+    {
+      "id": "ORG-4548",
+      "org_name": "Acme Org 4497",
+      "admin_email": "admin_4497@acme.com",
+      "password": "password123",
+      "industry": "General Retail",
+      "is_verified": false,
+      "verification_code": "577980",
+      "verification_token": "VT-1792625193756",
+      "created_at": "2026-10-21T23:26:33.756Z"
+    },
+    {
+      "id": "ORG-1270",
+      "org_name": "Apex Retailers 3881",
+      "admin_email": "admin_3881@apex.com",
+      "password": "adminPassword123",
+      "industry": "Electronics & Smart Home",
+      "is_verified": false,
+      "verification_code": "158536",
+      "verification_token": "VT-1792625193915",
+      "created_at": "2026-10-21T23:26:33.915Z"
+    },
+    {
+      "id": "ORG-9152",
+      "org_name": "SmartMarket Superstores",
+      "admin_email": "retail_owner_1792625248792@smartmarket.com",
+      "password": "password123",
+      "industry": "Supermarket & Grocery",
+      "is_verified": true,
+      "verification_code": "732427",
+      "verification_token": "VT-1792625248807",
+      "created_at": "2026-10-21T23:27:28.807Z"
+    },
+    {
+      "id": "ORG-7119",
+      "org_name": "Apex SaaS Retailers",
+      "admin_email": "saas_user_1792625249135@apexstore.com",
+      "password": "password123",
+      "industry": "Apparel & Fashion",
+      "is_verified": false,
+      "verification_code": "705829",
+      "verification_token": "VT-1792625249138",
+      "created_at": "2026-10-21T23:27:29.138Z"
     }
   ],
   "users": [
@@ -279,6 +356,107 @@
       "role": "Owner",
       "created_by": "SYSTEM",
       "created_at": "2026-08-15T05:44:37.076Z"
+    },
+    {
+      "id": "USR-LOCAL-1792625169356-1386",
+      "firebase_uid": "USR-LOCAL-1792625169356-1386",
+      "org_id": "ORG-6377",
+      "name": "Admin User",
+      "email": "org_1792625169355@apexretail.com",
+      "password": "securePassword456",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-10-21T23:26:09.358Z"
+    },
+    {
+      "id": "USR-LOCAL-1792625178558-7938",
+      "firebase_uid": "USR-LOCAL-1792625178558-7938",
+      "org_id": "ORG-8371",
+      "name": "Admin User",
+      "email": "client_admin_1792625178542@fairprice.com",
+      "password": "password123",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-10-21T23:26:18.560Z"
+    },
+    {
+      "id": "USR-LOCAL-1792625178604-7832",
+      "firebase_uid": "USR-LOCAL-1792625178604-7832",
+      "org_id": "ORG-3523",
+      "name": "Admin User",
+      "email": "bernieamce@gmail.com",
+      "password": "ownerpassword123",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-10-21T23:26:18.606Z"
+    },
+    {
+      "id": "USR-LOCAL-1792625193754-5622",
+      "firebase_uid": "USR-LOCAL-1792625193754-5622",
+      "org_id": "ORG-4548",
+      "name": "Admin User",
+      "email": "admin_4497@acme.com",
+      "password": "password123",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-10-21T23:26:33.756Z"
+    },
+    {
+      "id": "USR-LOCAL-1792625193913-5670",
+      "firebase_uid": "USR-LOCAL-1792625193913-5670",
+      "org_id": "ORG-1270",
+      "name": "Admin User",
+      "email": "admin_3881@apex.com",
+      "password": "adminPassword123",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-10-21T23:26:33.915Z"
+    },
+    {
+      "id": "USR-MAN-182",
+      "firebase_uid": null,
+      "org_id": "ORG-1270",
+      "name": "Apex Manager",
+      "email": "manager_3881@apex.com",
+      "password": "managerPassword123",
+      "role": "Manager",
+      "created_by": "USR-LOCAL-1792625193913-5670",
+      "created_at": "2026-10-21T23:26:33.927Z",
+      "suspended": false
+    },
+    {
+      "id": "USR-STA-793",
+      "firebase_uid": null,
+      "org_id": "ORG-1270",
+      "name": "Apex Staff John",
+      "email": "staff_3881@apex.com",
+      "password": "staffPassword123",
+      "role": "Staff",
+      "created_by": "USR-MAN-182",
+      "created_at": "2026-10-21T23:26:33.935Z",
+      "suspended": false
+    },
+    {
+      "id": "USR-LOCAL-1792625248806-5008",
+      "firebase_uid": "USR-LOCAL-1792625248806-5008",
+      "org_id": "ORG-9152",
+      "name": "Admin User",
+      "email": "retail_owner_1792625248792@smartmarket.com",
+      "password": "password123",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-10-21T23:27:28.807Z"
+    },
+    {
+      "id": "USR-LOCAL-1792625249137-6100",
+      "firebase_uid": "USR-LOCAL-1792625249137-6100",
+      "org_id": "ORG-7119",
+      "name": "Admin User",
+      "email": "saas_user_1792625249135@apexstore.com",
+      "password": "password123",
+      "role": "Owner",
+      "created_by": "SYSTEM",
+      "created_at": "2026-10-21T23:27:29.138Z"
     }
   ],
   "products": [
@@ -294,6 +472,44 @@
       "min_reorder_level": 100,
       "lead_time": 3,
       "supplier_name": "Beverage Wholesalers"
+    },
+    {
+      "org_id": "ORG-4548",
+      "sku": "BEV-001",
+      "name": "Sparkling Energy Water",
+      "category": "Premium Beverages",
+      "volume_per_unit": 0.0005,
+      "cost": 1.2,
+      "price": 2.99,
+      "safety_stock": 50,
+      "min_reorder_level": 100,
+      "lead_time": 3,
+      "supplier_name": "Beverage Wholesalers",
+      "expiry_date": null
+    },
+    {
+      "sku": "TS-100",
+      "org_id": "ORG-DEMO-001",
+      "name": "EcoSmart Smart Thermostat",
+      "category": "General Retail",
+      "cost": 80,
+      "price": "104.00",
+      "lead_time": 5,
+      "safety_stock": 10,
+      "volume_per_unit": 0.005,
+      "supplier_name": "Apex Electronics Wholesalers"
+    },
+    {
+      "sku": "OCR-NEW",
+      "org_id": "ORG-DEMO-001",
+      "name": "Laser Scanner Sensor Pack",
+      "category": "General Retail",
+      "cost": 120,
+      "price": "156.00",
+      "lead_time": 5,
+      "safety_stock": 10,
+      "volume_per_unit": 0.005,
+      "supplier_name": "Apex Electronics Wholesalers"
     }
   ],
   "inventory": [
@@ -314,22 +530,142 @@
       "sku": "BEV-001",
       "branch": "South Branch",
       "quantity": 80
+    },
+    {
+      "org_id": "ORG-4548",
+      "sku": "BEV-001",
+      "branch": "Main Warehouse",
+      "quantity": 200
+    },
+    {
+      "org_id": "ORG-4548",
+      "sku": "BEV-001",
+      "branch": "North Branch",
+      "quantity": 50
+    },
+    {
+      "org_id": "ORG-4548",
+      "sku": "BEV-001",
+      "branch": "South Branch",
+      "quantity": 80
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "sku": "TS-100",
+      "branch": "North Branch",
+      "quantity": 10
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "sku": "OCR-NEW",
+      "branch": "North Branch",
+      "quantity": 5
     }
   ],
   "sales": [],
   "redistributions": [],
-  "customer_requests": [],
+  "customer_requests": [
+    {
+      "org_id": "ORG-1270",
+      "id": "REQ-6948",
+      "customer_name": "John Doe Customer",
+      "customer_email": "johndoe@gmail.com",
+      "requested_item": "Premium EcoSmart Smart Thermostat Gold Series (Custom Item)",
+      "item_description": "Standard model with extra screen guards",
+      "quantity": 10,
+      "notes": "Customer needs stock hold",
+      "category": "General Retail",
+      "priority": "Medium",
+      "status": "Pending",
+      "created_by_user_id": "USR-STA-793",
+      "created_by_staff": "Apex Staff John",
+      "created_at": "2026-10-21T23:26:33.942Z"
+    }
+  ],
   "purchase_list": [],
-  "alert_logs": [],
+  "alert_logs": [
+    {
+      "org_id": "ORG-DEMO-001",
+      "id": "LOG-WA-3621-260",
+      "channel": "WhatsApp",
+      "recipient": "+1999888777",
+      "type": "Expiry",
+      "message": "SmartStock Alert: Product TS-100 batch is expiring in 5 days.",
+      "timestamp": "2026-10-21T23:26:33.621Z"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "id": "LOG-WA-3621-788",
+      "channel": "WhatsApp",
+      "recipient": "+1999888777",
+      "type": "Stagnant",
+      "message": "SmartStock Alert: Product PB-300 has had 0 sales in the last 14 days.",
+      "timestamp": "2026-10-21T23:26:33.621Z"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "id": "LOG-WA-3621-490",
+      "channel": "WhatsApp",
+      "recipient": "+1999888777",
+      "type": "Fast Selling",
+      "message": "SmartStock Alert: Product WC-500 is selling at 2.5x normal rate.",
+      "timestamp": "2026-10-21T23:26:33.621Z"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "id": "LOG-WA-3621-141",
+      "channel": "WhatsApp",
+      "recipient": "+1999888777",
+      "type": "Slow Selling",
+      "message": "SmartStock Alert: Product LL-800 sales have dropped below safety levels.",
+      "timestamp": "2026-10-21T23:26:33.621Z"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "id": "LOG-EM-3621-857",
+      "channel": "Email",
+      "recipient": "notifications@smartstock.io",
+      "type": "Expiry",
+      "message": "SmartStock System Alert: Product TS-100 batch is expiring in 5 days.",
+      "timestamp": "2026-10-21T23:26:33.621Z"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "id": "LOG-EM-3621-851",
+      "channel": "Email",
+      "recipient": "notifications@smartstock.io",
+      "type": "Stagnant",
+      "message": "SmartStock System Alert: Product PB-300 has had 0 sales in the last 14 days.",
+      "timestamp": "2026-10-21T23:26:33.621Z"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "id": "LOG-EM-3621-632",
+      "channel": "Email",
+      "recipient": "notifications@smartstock.io",
+      "type": "Fast Selling",
+      "message": "SmartStock System Alert: Product WC-500 is selling at 2.5x normal rate.",
+      "timestamp": "2026-10-21T23:26:33.621Z"
+    },
+    {
+      "org_id": "ORG-DEMO-001",
+      "id": "LOG-EM-3621-226",
+      "channel": "Email",
+      "recipient": "notifications@smartstock.io",
+      "type": "Slow Selling",
+      "message": "SmartStock System Alert: Product LL-800 sales have dropped below safety levels.",
+      "timestamp": "2026-10-21T23:26:33.621Z"
+    }
+  ],
   "settings": {
     "ORG-DEMO-001": {
       "branch_visibility": "all",
       "alert_sensitivity": "medium",
       "velocity_threshold_coefficient": 1.5,
-      "alert_whatsapp_enabled": false,
-      "alert_whatsapp_phone": "",
-      "alert_email_enabled": false,
-      "alert_email_address": "",
+      "alert_whatsapp_enabled": true,
+      "alert_whatsapp_phone": "+1999888777",
+      "alert_email_enabled": true,
+      "alert_email_address": "notifications@smartstock.io",
       "alert_telegram_enabled": false,
       "alert_telegram_chatid": ""
     },
@@ -478,11 +814,80 @@
       "branch_visibility": "all",
       "alert_sensitivity": "medium",
       "velocity_threshold_coefficient": 1.5
+    },
+    "ORG-6377": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
+    },
+    "ORG-8371": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
+    },
+    "global": {
+      "owner_email": "executive_owner@smartstock.io",
+      "owner_alerts_enabled": true
+    },
+    "ORG-3523": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
+    },
+    "ORG-4548": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
+    },
+    "ORG-1270": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
+    },
+    "ORG-9152": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
+    },
+    "ORG-7119": {
+      "branch_visibility": "all",
+      "alert_sensitivity": "medium",
+      "velocity_threshold_coefficient": 1.5
     }
   },
   "suppliers": [],
   "purchaseOrders": [],
-  "invoices": [],
+  "invoices": [
+    {
+      "id": "INV-TEST-OCR-999",
+      "org_id": "ORG-DEMO-001",
+      "receipt_number": "INV-TEST-OCR-999",
+      "invoice_number": "INV-TEST-OCR-999",
+      "invoice_id": "INV-TEST-OCR-999",
+      "customer_name": "Apex Electronics Wholesalers",
+      "supplier_name": "Apex Electronics Wholesalers",
+      "date": "2026-07-23",
+      "branch_name": "North Branch",
+      "product_name": "EcoSmart Smart Thermostat",
+      "amount": 1400,
+      "total_amount": 1400,
+      "items": [
+        {
+          "sku": "TS-100",
+          "name": "EcoSmart Smart Thermostat",
+          "qty": 10,
+          "price": 80
+        },
+        {
+          "sku": "OCR-NEW",
+          "name": "Laser Scanner Sensor Pack",
+          "qty": 5,
+          "price": 120
+        }
+      ],
+      "payment_status": "Paid"
+    }
+  ],
   "categories": [
     {
       "org_id": "ORG-DEMO-001",
@@ -735,6 +1140,166 @@
     {
       "org_id": "ORG-3995",
       "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-6377",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-6377",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-6377",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-6377",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-6377",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-6377",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-8371",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-8371",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-8371",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-8371",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-8371",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-8371",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-3523",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-3523",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-3523",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-3523",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-3523",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-4548",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-4548",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-4548",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-4548",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-4548",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-4548",
+      "name": "Premium Beverages"
+    },
+    {
+      "org_id": "ORG-1270",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-1270",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-1270",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-1270",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-1270",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-9152",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-9152",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-9152",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-9152",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-9152",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-9152",
+      "name": "Supermarket & Grocery"
+    },
+    {
+      "org_id": "ORG-7119",
+      "name": "Electronics & Smart Home"
+    },
+    {
+      "org_id": "ORG-7119",
+      "name": "Groceries & Consumables"
+    },
+    {
+      "org_id": "ORG-7119",
+      "name": "Packaging & Delivery"
+    },
+    {
+      "org_id": "ORG-7119",
+      "name": "Office Stationery"
+    },
+    {
+      "org_id": "ORG-7119",
+      "name": "General Retail"
+    },
+    {
+      "org_id": "ORG-7119",
+      "name": "Apparel & Fashion"
     }
   ],
   "activity_logs": [
@@ -1001,6 +1566,222 @@
       "time": "14:56:39",
       "branch": "Central Hub",
       "device": "Mozilla/5.0"
+    },
+    {
+      "id": "LOG-6089",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Signed in to organization portal",
+      "date": "2026-10-21",
+      "time": "00:26:09",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-2316",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1792625169356-1386",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Supermarkets Corp and Owner account",
+      "date": "2026-10-21",
+      "time": "00:26:09",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-7392",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1792625178558-7938",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Fairprice Retailers and Owner account",
+      "date": "2026-10-21",
+      "time": "00:26:18",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-1986",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1792625178604-7832",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: SmartStock Owner Corp and Owner account",
+      "date": "2026-10-21",
+      "time": "00:26:18",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-6566",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1792625193754-5622",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Acme Org 4497 and Owner account",
+      "date": "2026-10-21",
+      "time": "00:26:33",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-6052",
+      "org_id": "ORG-4548",
+      "user_id": "USR-LOCAL-1792625193754-5622",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered product BEV-001 to catalog: Sparkling Energy Water",
+      "date": "2026-10-21",
+      "time": "00:26:33",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-3115",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1792625193913-5670",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex Retailers 3881 and Owner account",
+      "date": "2026-10-21",
+      "time": "00:26:33",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-4889",
+      "org_id": "ORG-1270",
+      "user_id": "USR-LOCAL-1792625193913-5670",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Created a new Manager account: Apex Manager (manager_3881@apex.com)",
+      "date": "2026-10-21",
+      "time": "00:26:33",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-1545",
+      "org_id": "ORG-1270",
+      "user_id": "USR-MAN-182",
+      "user_name": "Apex Manager",
+      "role": "Manager",
+      "action": "Created a new Staff account: Apex Staff John (staff_3881@apex.com)",
+      "date": "2026-10-21",
+      "time": "00:26:33",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-1828",
+      "org_id": "ORG-1270",
+      "user_id": "USR-STA-793",
+      "user_name": "Apex Staff John",
+      "role": "Staff",
+      "action": "Logged customer request REQ-6948 for John Doe Customer",
+      "date": "2026-10-21",
+      "time": "00:26:33",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-6083",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1792625248806-5008",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: SmartMarket Superstores and Owner account",
+      "date": "2026-10-21",
+      "time": "00:27:28",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-2356",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "SYSTEM",
+      "user_name": "System/Guest",
+      "role": "Staff",
+      "action": "Verified organization email for: SmartMarket Superstores",
+      "date": "2026-10-21",
+      "time": "00:27:28",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-2416",
+      "org_id": "ORG-9152",
+      "user_id": "SYSTEM",
+      "user_name": "System/Guest",
+      "role": "Staff",
+      "action": "Downloaded desktop app package",
+      "date": "2026-10-21",
+      "time": "00:27:28",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-8320",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-ADMIN-001",
+      "user_name": "Global Owner",
+      "role": "Owner",
+      "action": "Created invoice INV-TEST-OCR-999",
+      "date": "2026-10-21",
+      "time": "00:27:28",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-5442",
+      "org_id": "ORG-DEMO-001",
+      "user_id": "USR-LOCAL-1792625249137-6100",
+      "user_name": "Admin User",
+      "role": "Owner",
+      "action": "Registered new organization: Apex SaaS Retailers and Owner account",
+      "date": "2026-10-21",
+      "time": "00:27:29",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-5408",
+      "org_id": "ORG-7119",
+      "user_id": "SYSTEM",
+      "user_name": "System/Guest",
+      "role": "Staff",
+      "action": "Subscribed to SaaS Plan: Pro Retailer",
+      "date": "2026-10-21",
+      "time": "00:27:29",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-2174",
+      "org_id": "ORG-7119",
+      "user_id": "SYSTEM",
+      "user_name": "System/Guest",
+      "role": "Staff",
+      "action": "Subscribed to SaaS Plan: Enterprise AI Plan",
+      "date": "2026-10-21",
+      "time": "00:27:29",
+      "branch": "Central Hub",
+      "device": "Web Browser"
+    },
+    {
+      "id": "LOG-3930",
+      "org_id": "ORG-7119",
+      "user_id": "SYSTEM",
+      "user_name": "System/Guest",
+      "role": "Staff",
+      "action": "Cancelled SaaS Subscription",
+      "date": "2026-10-21",
+      "time": "00:27:29",
+      "branch": "Central Hub",
+      "device": "Web Browser"
     }
   ],
   "email_logs": [
@@ -1183,8 +1964,203 @@
       "subject": "Verify Your SmartStock Account",
       "html": "Your verification code is 852708",
       "timestamp": "2026-08-15T05:44:37.076Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625169358-1",
+      "org_id": "ORG-6377",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Supermarkets Corp (org_1792625169355@apexretail.com)",
+      "timestamp": "2026-10-21T23:26:09.358Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625169358-2",
+      "org_id": "ORG-6377",
+      "type": "USER_VERIFICATION",
+      "to": "org_1792625169355@apexretail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 447057",
+      "timestamp": "2026-10-21T23:26:09.358Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625178560-1",
+      "org_id": "ORG-8371",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Fairprice Retailers (client_admin_1792625178542@fairprice.com)",
+      "timestamp": "2026-10-21T23:26:18.560Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625178560-2",
+      "org_id": "ORG-8371",
+      "type": "USER_VERIFICATION",
+      "to": "client_admin_1792625178542@fairprice.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 758166",
+      "timestamp": "2026-10-21T23:26:18.560Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625178606-1",
+      "org_id": "ORG-3523",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: SmartStock Owner Corp (bernieamce@gmail.com)",
+      "timestamp": "2026-10-21T23:26:18.606Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625178606-2",
+      "org_id": "ORG-3523",
+      "type": "USER_VERIFICATION",
+      "to": "bernieamce@gmail.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 651468",
+      "timestamp": "2026-10-21T23:26:18.606Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625193756-1",
+      "org_id": "ORG-4548",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Acme Org 4497 (admin_4497@acme.com)",
+      "timestamp": "2026-10-21T23:26:33.756Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625193756-2",
+      "org_id": "ORG-4548",
+      "type": "USER_VERIFICATION",
+      "to": "admin_4497@acme.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 577980",
+      "timestamp": "2026-10-21T23:26:33.756Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625193915-1",
+      "org_id": "ORG-1270",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex Retailers 3881 (admin_3881@apex.com)",
+      "timestamp": "2026-10-21T23:26:33.915Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625193915-2",
+      "org_id": "ORG-1270",
+      "type": "USER_VERIFICATION",
+      "to": "admin_3881@apex.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 158536",
+      "timestamp": "2026-10-21T23:26:33.915Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625248807-1",
+      "org_id": "ORG-9152",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: SmartMarket Superstores (retail_owner_1792625248792@smartmarket.com)",
+      "timestamp": "2026-10-21T23:27:28.807Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625248807-2",
+      "org_id": "ORG-9152",
+      "type": "USER_VERIFICATION",
+      "to": "retail_owner_1792625248792@smartmarket.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 732427",
+      "timestamp": "2026-10-21T23:27:28.807Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625248829-3",
+      "org_id": "ORG-9152",
+      "type": "OWNER_ALERT_VERIFIED",
+      "to": "bernieamce@gmail.com",
+      "subject": "SmartStock: Account Verified",
+      "html": "Organization account verified for: retail_owner_1792625248792@smartmarket.com",
+      "timestamp": "2026-10-21T23:27:28.829Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625248838-4",
+      "org_id": "ORG-9152",
+      "type": "OWNER_ALERT_DOWNLOAD",
+      "to": "bernieamce@gmail.com",
+      "subject": "SmartStock Desktop App Package Downloaded",
+      "html": "Desktop app downloaded by Organization: ORG-9152",
+      "timestamp": "2026-10-21T23:27:28.838Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625249138-1",
+      "org_id": "ORG-7119",
+      "type": "OWNER_ALERT_SIGNUP",
+      "to": "bernieamce@gmail.com",
+      "subject": "New Organization Signed Up",
+      "html": "New organization registered: Apex SaaS Retailers (saas_user_1792625249135@apexstore.com)",
+      "timestamp": "2026-10-21T23:27:29.138Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625249138-2",
+      "org_id": "ORG-7119",
+      "type": "USER_VERIFICATION",
+      "to": "saas_user_1792625249135@apexstore.com",
+      "subject": "Verify Your SmartStock Account",
+      "html": "Your verification code is 705829",
+      "timestamp": "2026-10-21T23:27:29.138Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625249155-SUB-1",
+      "org_id": "ORG-7119",
+      "type": "OWNER_ALERT_SUBSCRIPTION",
+      "to": "bernieamce@gmail.com",
+      "subject": "SmartStock SaaS: New Subscription Alert (Pro Retailer)",
+      "html": "Organization ORG-7119 subscribed to Pro Retailer. Invoice amount: $49",
+      "timestamp": "2026-10-21T23:27:29.155Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625249155-SUB-2",
+      "org_id": "ORG-7119",
+      "type": "USER_SUBSCRIPTION_RECEIPT",
+      "to": "saas_user_1792625249135@apexstore.com",
+      "subject": "Tax Invoice & Subscription Receipt",
+      "html": "Receipt for Pro Retailer. Charge of $49 was billed to your payment method. Invoice ID: INV-SUB-9424",
+      "timestamp": "2026-10-21T23:27:29.155Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625249165-SUB-1",
+      "org_id": "ORG-7119",
+      "type": "OWNER_ALERT_SUBSCRIPTION",
+      "to": "bernieamce@gmail.com",
+      "subject": "SmartStock SaaS: New Subscription Alert (Enterprise AI Plan)",
+      "html": "Organization ORG-7119 subscribed to Enterprise AI Plan. Invoice amount: $1990",
+      "timestamp": "2026-10-21T23:27:29.165Z"
+    },
+    {
+      "id": "EMAIL-LOG-1792625249165-SUB-2",
+      "org_id": "ORG-7119",
+      "type": "USER_SUBSCRIPTION_RECEIPT",
+      "to": "saas_user_1792625249135@apexstore.com",
+      "subject": "Tax Invoice & Subscription Receipt",
+      "html": "Receipt for Enterprise AI Plan. Charge of $1990 was billed to your payment method. Invoice ID: INV-SUB-3904",
+      "timestamp": "2026-10-21T23:27:29.165Z"
     }
   ],
   "expiry_reports": [],
-  "stock_adjustments": []
+  "stock_adjustments": [],
+  "subscriptions": {
+    "ORG-7119": {
+      "plan_id": "enterprise",
+      "plan_name": "Enterprise AI Plan",
+      "status": "canceled",
+      "billing_cycle": "annual",
+      "payment_method": {
+        "brand": "Visa",
+        "last4": "9999",
+        "exp_month": 12,
+        "exp_year": 2030
+      },
+      "created_at": "2026-10-21T23:27:29.165Z"
+    }
+  }
 }

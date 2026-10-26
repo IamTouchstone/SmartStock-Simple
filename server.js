@@ -6,7 +6,12 @@ const { initDB, readDB, writeDB, seedNewOrganization, DEFAULT_ORG_ID } = require
 const PDFDocument = require('pdfkit');
 
 // --- FIRESTORE DIRECT INITIALIZATION ---
-const { Firestore } = require('@google-cloud/firestore');
+let Firestore = null;
+try {
+  Firestore = require('@google-cloud/firestore').Firestore;
+} catch (e) {
+  // Optional native firestore driver
+}
 
 let firestoreDB = null;
 
@@ -990,7 +995,7 @@ const requestHandler = (req, res) => {
       // 1. AUTH SIGNUP
       if (pathname === '/api/auth/signup') {
         console.log("[SERVER] Hit /api/auth/signup endpoint");
-        const { org_name, admin_email, industry, password } = body;
+        const { org_name, admin_email, industry, password, currency, currency_symbol } = body;
         let { firebase_uid } = body;
         if (!org_name || !admin_email) {
           return sendJSON(res, { error: "Please fill in all registration fields." }, 400);
@@ -1010,12 +1015,17 @@ const requestHandler = (req, res) => {
         const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
         const verification_token = `VT-${Date.now()}`;
 
+        const orgCurrency = currency || "USD";
+        const orgCurrencySymbol = currency_symbol || (orgCurrency === "NGN" ? "₦" : orgCurrency === "GBP" ? "£" : orgCurrency === "EUR" ? "€" : "$");
+
         const newOrg = {
           id: newOrgId,
           org_name,
           admin_email: admin_email.toLowerCase(),
           password: password || "password123",
           industry: industry || "General Retail",
+          currency: orgCurrency,
+          currency_symbol: orgCurrencySymbol,
           is_verified: false,
           verification_code,
           verification_token,
@@ -1030,6 +1040,8 @@ const requestHandler = (req, res) => {
           email: admin_email.toLowerCase(),
           password: password || "password123",
           role: "Owner",
+          currency: orgCurrency,
+          currency_symbol: orgCurrencySymbol,
           created_by: "SYSTEM",
           created_at: new Date().toISOString()
         };

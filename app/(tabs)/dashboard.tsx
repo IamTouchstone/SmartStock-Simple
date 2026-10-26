@@ -7,7 +7,8 @@ import {
   ScrollView, 
   RefreshControl,
   ActivityIndicator,
-  StatusBar
+  StatusBar,
+  Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getAuthSession, getDashboardSummary } from '../../services/inventoryService';
@@ -68,9 +69,16 @@ export default function DashboardScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.orgTitle}>{orgName}</Text>
-          <Text style={styles.roleSubtitle}>Logged in as {userRole}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Image
+            source={require('../../public/icons/icon-72.png')}
+            style={{ width: 40, height: 40, borderRadius: 9, marginRight: 12 }}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.orgTitle}>{orgName}</Text>
+            <Text style={styles.roleSubtitle}>Logged in as {userRole}</Text>
+          </View>
         </View>
         <TouchableOpacity 
           style={styles.refreshBadge} 

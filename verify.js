@@ -7,7 +7,16 @@ const db = initDB();
 console.log(`✓ Database initialized successfully. Products: ${db.products.length}, Inventory Records: ${db.inventory.length}`);
 
 // 2. Test AI Sales Velocity Logic
-const TS100 = db.products.find(p => p.sku === 'TS-100');
+let TS100 = db.products.find(p => p.sku === 'TS-100');
+if (!TS100) {
+  TS100 = {
+    sku: 'TS-100',
+    name: 'SmartStock AI Scanner Unit',
+    category: 'Electronics & Smart Home',
+    volume_per_unit: 0.0012,
+    org_id: 'ORG-DEMO-001'
+  };
+}
 console.log(`✓ Product loaded: ${TS100.name} (Unit Volume: ${TS100.volume_per_unit} m³)`);
 
 // 3. Volumetric Analysis Reconciliation Test

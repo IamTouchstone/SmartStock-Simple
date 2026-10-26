@@ -1,4 +1,16 @@
 node_modules
-package-lock.json
 /android
 /ios
+/dist
+/.expo
+/store_assets_v1.0.1
+package-lock.json
+*.hbc
+*.map
+.env
+server.js
+verify*.js
+generate_icons.js
+serviceAccountKey*.json
+vercel.json
+smartstock_core_integration_package*.json
