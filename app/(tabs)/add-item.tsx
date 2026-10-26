@@ -141,7 +141,7 @@ export default function AddItemScreen() {
       </ScrollView>
 
       {/* FIXED MODAL - Real camera preview like phone camera */}
-      <Modal visible={scannerVisible} animationType="fullScreen" statusBarTranslucent>
+      <Modal visible={scannerVisible} animationType="slide" statusBarTranslucent={true}>
         <View style={{ flex: 1, backgroundColor: 'black' }}>
           <CameraView
             style={{ flex: 1 }}
@@ -156,7 +156,7 @@ export default function AddItemScreen() {
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
               <View style={{ width: 300, height: 200, borderWidth: 2, borderColor: '#64ffda', borderRadius: 12, backgroundColor: 'transparent' }} />
             </View>
-            <View style={{ paddingBottom: 50, alignItems: 'center', gap: 15 }}>
+            <View style={{ paddingBottom: 50, alignItems: 'center' }}>
               <TouchableOpacity onPress={() => setFacing(f => f === 'back' ? 'front' : 'back')} style={{ backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#64ffda', paddingHorizontal: 22, paddingVertical: 12, borderRadius: 25 }}>
                 <Text style={{ color: '#64ffda', fontWeight: 'bold' }}>🔄 Flip to {facing === 'back' ? 'Front' : 'Back'}</Text>
               </TouchableOpacity>
