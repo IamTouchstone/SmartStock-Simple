@@ -3,6 +3,8 @@
 dist/
 web-build/
 .expo-shared/
+android/
+ios/
 
 # APK / AAB - NEVER PUSH AGAIN
 *.apk

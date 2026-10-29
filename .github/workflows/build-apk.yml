@@ -1,0 +1,84 @@
+name: Build SmartStock APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Write .env file
+        run: |
+          cat << 'EOF' > .env
+          EXPO_PUBLIC_FIREBASE_API_KEY=AIzaSyDouC2zVQ3lRDONRJJFootUbKVU9YKiJ0g
+          EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=smartstock-424c3.firebaseapp.com
+          EXPO_PUBLIC_FIREBASE_PROJECT_ID=smartstock-424c3
+          EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=smartstock-424c3.firebasestorage.app
+          EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=283866117860
+          EXPO_PUBLIC_FIREBASE_APP_ID=1:283866117860:web:14d344ed21d7d2a4d6def1
+          EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=G-K4PKPPESB2
+          EOF
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Expo Prebuild
+        run: npx expo prebuild --platform android --clean
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x android/gradlew
+
+      - name: Build Android APK
+        run: |
+          cd android
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Copy & Rename APK
+        run: |
+          mkdir -p build-output
+          cp android/app/build/outputs/apk/release/app-release.apk build-output/SmartStock-v1.0.1.apk
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartStock-v1.0.1-APK
+          path: build-output/SmartStock-v1.0.1.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main')
+        with:
+          tag_name: v1.0.1-build-${{ github.run_number }}
+          name: SmartStock v1.0.1 (Build #${{ github.run_number }})
+          body: |
+            ### SmartStock v1.0.1 Release APK
+            - Direct standalone APK download for Android
+            - Configured with Google OAuth proxy authentication
+            - Full Email/Password, Google, and Phone authentication
+            - Updated inventory catalog and compliant privacy policy
+          files: build-output/SmartStock-v1.0.1.apk
