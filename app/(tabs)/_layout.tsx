@@ -39,6 +39,14 @@ export default function TabsLayout() {
           tabBarIcon: () => <Text style={{ fontSize: 20 }}>📦</Text>,
         }}
       />
+      {/* NEW POS TAB - SALES + FASTEST/STAGNATED UPDATE */}
+      <Tabs.Screen
+        name="pos"
+        options={{
+          title: 'POS',
+          tabBarIcon: () => <Text style={{ fontSize: 20 }}>💳</Text>,
+        }}
+      />
       <Tabs.Screen
         name="add-item"
         options={{

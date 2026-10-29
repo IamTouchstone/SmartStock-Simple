@@ -5,8 +5,8 @@
     "version": "1.0.1",
     "orientation": "portrait",
     "platforms": [
-      "ios",
       "android",
+      "ios",
       "web"
     ],
     "icon": "./public/icons/icon-512.png",
@@ -23,7 +23,10 @@
         "backgroundColor": "#0A2E24"
       },
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -45,7 +48,19 @@
           "cameraPermission": "Allow SmartStock to access your camera."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-build-properties",
+      "expo-status-bar",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./public/icons/icon-512.png",
+          "color": "#0A2E24",
+          "sounds": []
+        }
+      ],
+      "expo-web-browser"
     ],
     "extra": {
       "router": {},
