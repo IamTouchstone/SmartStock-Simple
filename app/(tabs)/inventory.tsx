@@ -59,12 +59,10 @@ export default function InventoryScreen() {
   const [showScanner, setShowScanner] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
 
-  // NEW: MARKET DATE PICKER FOR CUSTOMER REQUESTS
   const [showMarketPicker, setShowMarketPicker] = useState(false);
   const [marketPickerProduct, setMarketPickerProduct] = useState<ProductItem | null>(null);
   const [tempMarketDate, setTempMarketDate] = useState(new Date());
 
-  // TRANSFER MODAL STATES
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferProduct, setTransferProduct] = useState<ProductItem|null>(null);
   const [fromBranch, setFromBranch] = useState('');
@@ -96,16 +94,18 @@ export default function InventoryScreen() {
   useEffect(() => { loadData(); }, [loadData]);
   const onRefresh = () => { setRefreshing(true); loadData(); };
 
-  // NEW: ADD MARKET DATE TO PRODUCT (SAVES TO FIREBASE)
+  // ADD MARKET DATE WITH SELECT CHECK
   const handleAddMarketDate = async (product: ProductItem, date: Date) => {
     try {
       const dateStr = date.toISOString();
-      // Update Firestore
-      const productRef = doc(db, 'products', product.sku); // adjust if your doc id is different - using sku as fallback
-      // Try update by org_id + sku query would be better, but for speed use update on first matching doc
-      // We will update local state immediately and also try firestore
+      const existing = (product as any).market_dates || (product as any).marketDates || [];
+      const exists = existing.some((d:string) => new Date(d).toDateString() === date.toDateString());
+      if (exists) {
+        Alert.alert('Already selected', 'This date is already added. Tap the pill to deselect it.');
+        return;
+      }
+
       try {
-        // Find product doc id via query
         const q = query(collection(db, 'products'), where('org_id','==',userOrgId), where('sku','==',product.sku));
         const snap = await getDocs(q);
         if (!snap.empty) {
@@ -114,7 +114,6 @@ export default function InventoryScreen() {
         }
       } catch (err) { console.log('firestore update failed, local only', err); }
 
-      // Update local state
       setProducts(prev => prev.map(p => {
         if (p.sku === product.sku) {
           const existing = (p as any).market_dates || (p as any).marketDates || [];
@@ -122,10 +121,38 @@ export default function InventoryScreen() {
         }
         return p;
       }));
-      Alert.alert('Added', `Market date ${date.toLocaleDateString()} added for ${product.name}`);
+      Alert.alert('Added ✓', `Market date ${date.toLocaleDateString()} selected`);
     } catch (e:any) { Alert.alert('Error', e.message); }
     setShowMarketPicker(false);
     setMarketPickerProduct(null);
+  };
+
+  // DESELECT / REMOVE MARKET DATE
+  const handleRemoveMarketDate = async (product: ProductItem, dateIso: string) => {
+    Alert.alert('Deselect date?', `Remove ${new Date(dateIso).toLocaleDateString()}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove ✕', style: 'destructive', onPress: async () => {
+        try {
+          const q = query(collection(db, 'products'), where('org_id','==',userOrgId), where('sku','==',product.sku));
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            const docRef = snap.docs[0].ref;
+            const current = snap.docs[0].data().market_dates || [];
+            const filtered = current.filter((d:string) => d !== dateIso);
+            await updateDoc(docRef, { market_dates: filtered });
+          }
+        } catch (err) { console.log('remove failed', err); }
+
+        setProducts(prev => prev.map(p => {
+          if (p.sku === product.sku) {
+            const existing = (p as any).market_dates || (p as any).marketDates || [];
+            const filtered = existing.filter((d:string) => d !== dateIso);
+            return { ...p, market_dates: filtered, marketDates: filtered } as any;
+          }
+          return p;
+        }));
+      }}
+    ]);
   };
 
   const openTransfer = (item: ProductItem) => {
@@ -144,10 +171,8 @@ export default function InventoryScreen() {
     if (fromBranch === toBranch) return Alert.alert('Source and target must be different');
     const qtyNum = Number(transferQty);
     if (!qtyNum || qtyNum <=0) return Alert.alert('Enter valid quantity');
-    
     const srcQty = transferProduct.branches?.find(b=>b.branch===fromBranch)?.quantity || 0;
     if (srcQty < qtyNum) return Alert.alert(`Insufficient stock`, `Only ${srcQty} available in ${fromBranch}`);
-
     try {
       const res = await approveRedistribution(transferProduct.sku, fromBranch, toBranch, qtyNum, userOrgId);
       if (res.success) { 
@@ -228,13 +253,10 @@ export default function InventoryScreen() {
         });
       case 'requests':
       case 'customer': 
-        return list.filter(p => 
-          p.customerRequested === true || 
-          p.isCustomerRequested === true || 
-          p.customer_requested === true || 
-          (p as any).requested_qty > 0 ||
-          (p as any).customer_name
-        );
+        return list.filter(p => {
+          const raw = p as any;
+          return raw.customer_requested === true || raw.customerRequested === true || raw.isCustomerRequested === true || raw.customer_name || raw.customerName;
+        });
       case 'fastest': return [...list].sort((a,b) => ((b as any).sales_count || 0) - ((a as any).sales_count || 0)).slice(0, 20);
       case 'stagnated': return list.filter(p => { const last = (p as any).last_sold_date ? new Date((p as any).last_sold_date) : null; return !last || (now.getTime() - last.getTime()) / (1000*60*60*24) > 30; });
       case 'expiring90': return list.filter(p => { const exp = (p as any).expiry_date ? new Date((p as any).expiry_date) : null; return exp && exp > now && exp <= in90Days; });
@@ -259,23 +281,11 @@ export default function InventoryScreen() {
   const renderProductItem = ({ item }: { item: ProductItem }) => {
     const isLowStock = (item.total_stock || 0) <= (item.safety_stock || 10);
     const expiry = (item as any).expiry_date ? new Date((item as any).expiry_date) : null;
-    const lastSold = (item as any).last_sold_date ? new Date((item as any).last_sold_date) : null;
     const salesCount = (item as any).sales_count || 0;
-    const daysLeft = expiry ? Math.ceil((expiry.getTime() - Date.now())/(1000*60*60*24)) : null;
-    const daysSinceLastSale = lastSold ? Math.floor((Date.now() - lastSold.getTime())/(1000*60*60*24)) : null;
     const itemSize = (item as any).item_size || (item as any).itemSize || '';
     const customerNameValue = (item as any).customer_name || (item as any).customerName || '';
     const marketDatesRaw = (item as any).marketDates || (item as any).market_dates || [];
-    const marketDates = marketDatesRaw.map((d:string) => new Date(d));
-
-    let alertBadge = null;
-    if (activeFilter==='market') {
-      alertBadge = marketDates.length > 0 ? `🛒 Market Planned (${marketDates.length} dates)` : `🛒 Low Stock Restock`;
-    }
-    if (activeFilter==='requests' || activeFilter==='customer') {
-      alertBadge = `🙋 Customer Requested`;
-    }
-
+    
     const isCustomerView = activeFilter==='requests' || activeFilter==='customer';
 
     return (
@@ -291,34 +301,34 @@ export default function InventoryScreen() {
               <Text style={{color:'#A5B4FC', fontSize:10, fontWeight:'700'}}>BARCODE:</Text>
               <Text style={{color:'#F8FAFC', fontSize:11, fontWeight:'700', letterSpacing:1}}>{(item as any).barcode || 'No barcode'}</Text>
             </View>
-            {alertBadge && <Text style={[styles.alertBadge, activeFilter==='expired' ? {color:'#EF4444'} : activeFilter==='countdown' ? {color:'#F59E0B'} : {color:'#A5B4FC'}]}>{alertBadge}</Text>}
 
-            {/* DETAILED MARKET PURCHASE PLANNER INSIDE CUSTOMER REQUESTS */}
+            {/* MARKET PURCHASE PLANNER - INSIDE CUSTOMER REQUESTS WITH SELECT/DESELECT */}
             {isCustomerView && (
-              <View style={{marginTop:10, backgroundColor:'#0F172A', borderWidth:1, borderColor:'#F59E0B', borderRadius:10, padding:10}}>
-                <Text style={{color:'#FBBF24', fontSize:11, fontWeight:'800'}}>🛒 MARKET PURCHASE PLANNER</Text>
-                <Text style={{color:'#94A3B8', fontSize:10, marginTop:2}}>Customer: {customerNameValue || 'Not specified'} • Qty: {item.total_stock || 0}</Text>
-                {marketDates.length > 0 ? (
-                  <View style={{flexDirection:'row', flexWrap:'wrap', gap:6, marginTop:8}}>
-                    {marketDates.map((d:Date,i:number)=>(
-                      <View key={i} style={{backgroundColor:'#F59E0B', paddingHorizontal:10, paddingVertical:5, borderRadius:16}}>
-                        <Text style={{color:'#000', fontSize:11, fontWeight:'700'}}>📅 {d.toLocaleDateString()}</Text>
-                      </View>
+              <View style={{marginTop:10, backgroundColor:'#0F172A', borderWidth:1, borderColor:'#F59E0B', borderRadius:12, padding:12}}>
+                <Text style={{color:'#FBBF24', fontSize:12, fontWeight:'800'}}>🛒 MARKET PURCHASE PLANNER</Text>
+                <Text style={{color:'#94A3B8', fontSize:10, marginTop:2}}>Customer: {customerNameValue || 'Not specified'} • Tap date to deselect</Text>
+                
+                {marketDatesRaw.length > 0 ? (
+                  <View style={{flexDirection:'row', flexWrap:'wrap', gap:8, marginTop:10}}>
+                    {marketDatesRaw.map((d:string,i:number)=>(
+                      <TouchableOpacity key={i} onPress={()=>handleRemoveMarketDate(item, d)} style={{backgroundColor:'#F59E0B', paddingHorizontal:12, paddingVertical:6, borderRadius:20, flexDirection:'row', alignItems:'center', gap:4}}>
+                        <Text style={{color:'#000', fontSize:12, fontWeight:'700'}}>{new Date(d).toLocaleDateString()}  ✕</Text>
+                      </TouchableOpacity>
                     ))}
                   </View>
                 ) : (
-                  <Text style={{color:'#64748B', fontSize:11, marginTop:6, fontStyle:'italic'}}>No market date set yet</Text>
+                  <Text style={{color:'#64748B', fontSize:11, marginTop:8, fontStyle:'italic'}}>No market date selected yet - add one below</Text>
                 )}
+
                 <TouchableOpacity 
                   onPress={()=>{ setMarketPickerProduct(item); setTempMarketDate(new Date()); setShowMarketPicker(true); }}
-                  style={{backgroundColor:'#422006', borderWidth:1, borderColor:'#F59E0B', paddingVertical:8, borderRadius:8, marginTop:10, alignItems:'center'}}
+                  style={{backgroundColor:'#422006', borderWidth:1, borderColor:'#F59E0B', paddingVertical:10, borderRadius:10, marginTop:12, alignItems:'center'}}
                 >
-                  <Text style={{color:'#FBBF24', fontWeight:'700', fontSize:12}}>📅 Add Market Date</Text>
+                  <Text style={{color:'#FBBF24', fontWeight:'800', fontSize:13}}>📅 Add Market Date</Text>
                 </TouchableOpacity>
+                <Text style={{color:'#64748B', fontSize:10, marginTop:6, textAlign:'center'}}>Select multiple dates. Tap pill to deselect.</Text>
               </View>
             )}
-
-            {expiry && !isCustomerView && <Text style={[styles.expiryText, daysLeft! <= 0 ? {color:'#EF4444'} : daysLeft! <= 30 ? {color:'#F59E0B'} : {color:'#94A3B8'} ]}>Exp: {expiry.toLocaleDateString()} {daysLeft! <= 0 ? `(Expired ${Math.abs(daysLeft!)}d ago)` : `(${daysLeft} days left)`}</Text>}
           </View>
           <View style={[styles.stockBadge, isLowStock ? styles.stockBadgeLow : styles.stockBadgeOk]}>
             <Text style={[styles.stockBadgeText, isLowStock ? styles.stockTextLow : styles.stockTextOk]}>{item.total_stock || 0} units</Text>
@@ -331,10 +341,10 @@ export default function InventoryScreen() {
         </View>
         <View style={styles.cardBottom}>
           <Text style={styles.priceText}>Price: <Text style={styles.priceValue}>{currencySymbol}{item.price.toFixed(2)}</Text>{itemSize ? ` • Size: ${itemSize}` : ''}</Text>
-          <TouchableOpacity style={styles.transferButton} onPress={() => openTransfer(item)} activeOpacity={0.7}><Text style={styles.transferButtonText}>🔄 Transfer</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.transferButton} onPress={() => openTransfer(item)}><Text style={styles.transferButtonText}>🔄 Transfer</Text></TouchableOpacity>
         </View>
         {isCustomerView && (
-          <TouchableOpacity onPress={async()=>{ /* Mark fulfilled logic */ }} style={[styles.transferButton,{marginTop:10, backgroundColor:'#065F46', borderWidth:1, borderColor:'#10B981'}]}>
+          <TouchableOpacity style={[styles.transferButton,{marginTop:10, backgroundColor:'#065F46', borderWidth:1, borderColor:'#10B981'}]}>
             <Text style={[styles.transferButtonText, {color:'#D1FAE5'}]}>✅ Fulfilled - History</Text>
           </TouchableOpacity>
         )}
@@ -365,28 +375,11 @@ export default function InventoryScreen() {
 
   let dataToShow:any[] = filteredProducts;
   let renderItem:any = renderProductItem;
-  let isCustomList = false;
-  if (activeFilter==='market') {
-    if (filteredProducts.length > 0) {
-      dataToShow = filteredProducts;
-      renderItem = renderProductItem;
-      isCustomList = false;
-    } else if (purchaseList.length > 0) {
-      dataToShow = search ? purchaseList.filter(p=> p.productName.toLowerCase().includes(search.toLowerCase()) || p.barcode.includes(search) ) : purchaseList;
-      renderItem = renderPurchaseCard;
-      isCustomList = true;
-    }
+  if (activeFilter==='market' && filteredProducts.length===0 && purchaseList.length>0) {
+    dataToShow = purchaseList; renderItem = renderPurchaseCard;
   }
-  if (activeFilter==='requests' || activeFilter==='customer') {
-    if (filteredProducts.length > 0) {
-      dataToShow = filteredProducts;
-      renderItem = renderProductItem;
-      isCustomList = false;
-    } else if (requestList.length > 0) {
-      dataToShow = search ? requestList.filter(p=> p.productName.toLowerCase().includes(search.toLowerCase()) || p.customerName.toLowerCase().includes(search.toLowerCase()) || p.barcode.includes(search) ) : requestList;
-      renderItem = renderRequestCard;
-      isCustomList = true;
-    }
+  if ((activeFilter==='requests' || activeFilter==='customer') && filteredProducts.length===0 && requestList.length>0) {
+    dataToShow = requestList; renderItem = renderRequestCard;
   }
 
   return (
@@ -404,14 +397,6 @@ export default function InventoryScreen() {
         </ScrollView>
       </View>
 
-      {(activeFilter==='market' || activeFilter==='requests') && (
-        <View style={{paddingHorizontal:20, paddingTop:12}}>
-          <TouchableOpacity onPress={()=>openAddModal(activeFilter as any)} style={styles.primaryBtn}>
-            <Text style={styles.primaryBtnText}>+ Add {activeFilter==='market' ? 'Market Purchase' : 'Customer Request'} (Auto Barcode)</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
       <FlatList
         data={dataToShow}
         keyExtractor={(item:any) => item.sku || item.id}
@@ -422,34 +407,31 @@ export default function InventoryScreen() {
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyEmoji}>📦</Text>
             <Text style={styles.emptyTitle}>No Products in {filters.find(f=>f.key===activeFilter)?.label}</Text>
-            <Text style={styles.emptySubtitle}>{isCustomList ? 'Tap + Add - barcode auto-generated for every item.' : 'Add products with barcode.'}</Text>
-            {isCustomList ? <TouchableOpacity style={styles.addBtn} onPress={()=>openAddModal(activeFilter as any)}><Text style={styles.addBtnText}>+ Add Now (Auto Barcode)</Text></TouchableOpacity> : <TouchableOpacity style={styles.addBtn} onPress={() => router.push('/(tabs)/add-item')}><Text style={styles.addBtnText}>+ Add Product</Text></TouchableOpacity>}
+            <Text style={styles.emptySubtitle}>Add products marked as Customer Request - they will appear here with Market Planner.</Text>
+            <TouchableOpacity style={styles.addBtn} onPress={() => router.push('/(tabs)/add-item')}><Text style={styles.addBtnText}>+ Add Product</Text></TouchableOpacity>
           </View>
         }
       />
 
-      {/* MARKET DATE PICKER FOR CUSTOMER REQUESTS */}
       {showMarketPicker && (
-        <View style={{position:'absolute', bottom:0, left:0, right:0, backgroundColor:'#0F172A', padding:20, borderTopLeftRadius:20, borderTopRightRadius:20, borderWidth:1, borderColor:'#334155'}}>
-          <Text style={{color:'#F8FAFC', fontWeight:'800', fontSize:16, marginBottom:10}}>Select Market Purchase Date for {marketPickerProduct?.name}</Text>
+        <View style={{position:'absolute', bottom:0, left:0, right:0, backgroundColor:'#0F172A', padding:20, borderTopLeftRadius:20, borderTopRightRadius:20, borderWidth:1, borderColor:'#F59E0B'}}>
+          <Text style={{color:'#F8FAFC', fontWeight:'800', fontSize:16, marginBottom:10}}>Select Market Date for {marketPickerProduct?.name}</Text>
           <DateTimePicker value={tempMarketDate} mode="date" minimumDate={new Date()} display={Platform.OS==='ios' ? 'spinner' : 'default'} onChange={(e,d)=>{ if(d) setTempMarketDate(d); if(Platform.OS==='android' && d){ handleAddMarketDate(marketPickerProduct!, d); } }} />
           {Platform.OS==='ios' && (
             <View style={{flexDirection:'row', gap:10, marginTop:12}}>
               <TouchableOpacity onPress={()=>setShowMarketPicker(false)} style={[styles.primaryBtn, {flex:1, backgroundColor:'#1E293B'}]}><Text style={styles.primaryBtnText}>Cancel</Text></TouchableOpacity>
-              <TouchableOpacity onPress={()=>handleAddMarketDate(marketPickerProduct!, tempMarketDate)} style={[styles.primaryBtn, {flex:1, backgroundColor:'#F59E0B'}]}><Text style={[styles.primaryBtnText, {color:'#000'}]}>Add Date</Text></TouchableOpacity>
+              <TouchableOpacity onPress={()=>handleAddMarketDate(marketPickerProduct!, tempMarketDate)} style={[styles.primaryBtn, {flex:1, backgroundColor:'#F59E0B'}]}><Text style={[styles.primaryBtnText, {color:'#000'}]}>Select Date</Text></TouchableOpacity>
             </View>
           )}
         </View>
       )}
 
-      {/* TRANSFER MODAL - DYNAMIC BRANCHES */}
       <Modal visible={showTransferModal} transparent animationType="slide">
         <View style={{flex:1, backgroundColor:'rgba(0,0,0,0.7)', justifyContent:'flex-end'}}>
           <View style={{backgroundColor:'#0F172A', borderTopLeftRadius:20, borderTopRightRadius:20, padding:20, paddingBottom:40}}>
             <Text style={{color:'#F8FAFC', fontSize:18, fontWeight:'800', marginBottom:4}}>Transfer Stock</Text>
             <Text style={{color:'#94A3B8', fontSize:12, marginBottom:16}}>{transferProduct?.name} ({transferProduct?.sku})</Text>
-            
-            <Text style={styles.label}>FROM (Available Stock)</Text>
+            <Text style={styles.label}>FROM</Text>
             <View style={styles.pickerBox}>
               <Picker selectedValue={fromBranch} onValueChange={setFromBranch} style={{color:'#F8FAFC'}}>
                 {branches.map(b=> {
@@ -458,17 +440,14 @@ export default function InventoryScreen() {
                 })}
               </Picker>
             </View>
-
             <Text style={styles.label}>TO</Text>
             <View style={styles.pickerBox}>
               <Picker selectedValue={toBranch} onValueChange={setToBranch} style={{color:'#F8FAFC'}}>
                 {branches.filter(b=>b!==fromBranch).map(b=> <Picker.Item key={b} label={b} value={b} />)}
               </Picker>
             </View>
-
             <Text style={styles.label}>QUANTITY</Text>
             <TextInput value={transferQty} onChangeText={setTransferQty} keyboardType="numeric" placeholder={`Max: ${transferProduct?.branches?.find(b=>b.branch===fromBranch)?.quantity || 0}`} placeholderTextColor="#64748B" style={styles.searchInput} />
-
             <View style={{flexDirection:'row', gap:10, marginTop:20}}>
               <TouchableOpacity onPress={()=>setShowTransferModal(false)} style={[styles.primaryBtn,{flex:1, backgroundColor:'#1E293B'}]}><Text style={styles.primaryBtnText}>Cancel</Text></TouchableOpacity>
               <TouchableOpacity onPress={confirmTransfer} style={[styles.primaryBtn,{flex:1}]}><Text style={styles.primaryBtnText}>Confirm Transfer</Text></TouchableOpacity>
@@ -481,39 +460,14 @@ export default function InventoryScreen() {
         <View style={{flex:1, backgroundColor:'#090D16', padding:20, paddingTop:60}}>
           <Text style={{color:'#F8FAFC', fontSize:20, fontWeight:'800', marginBottom:16}}>{modalType==='market' ? 'Add Market Purchase' : 'Add Customer Request'} - Auto Barcode</Text>
           <View style={{backgroundColor:'#0F172A', padding:12, borderRadius:10, borderWidth:1, borderColor:'#4F46E5', marginBottom:12}}>
-            <Text style={{color:'#A5B4FC', fontSize:10, fontWeight:'700'}}>AUTO BARCODE (EAN-13)</Text>
+            <Text style={{color:'#A5B4FC', fontSize:10, fontWeight:'700'}}>AUTO BARCODE</Text>
             <Text style={{color:'#F8FAFC', fontSize:16, fontWeight:'800', letterSpacing:2, marginTop:4}}>{manualBarcode}</Text>
-            <TouchableOpacity onPress={async()=> setManualBarcode(await generateUniqueBarcode(userOrgId))}><Text style={{color:'#4F46E5', fontSize:11, marginTop:6, textAlign:'center'}}>Regenerate</Text></TouchableOpacity>
           </View>
-          <View style={{flexDirection:'row', gap:8, marginBottom:12}}>
-            <TouchableOpacity onPress={()=>{setAddMode('from_inventory'); setShowScanner(false);}} style={[styles.filterChip, addMode==='from_inventory' && styles.filterChipActive, {flex:1}]}><Text style={[styles.filterText, addMode==='from_inventory' && styles.filterTextActive, {textAlign:'center'}]}>📦 Inventory</Text></TouchableOpacity>
-            <TouchableOpacity onPress={()=>{setAddMode('manual'); setShowScanner(false);}} style={[styles.filterChip, addMode==='manual' && styles.filterChipActive, {flex:1}]}><Text style={[styles.filterText, addMode==='manual' && styles.filterTextActive, {textAlign:'center'}]}>⌨️ Manual</Text></TouchableOpacity>
-            <TouchableOpacity onPress={async()=>{ if(!permission?.granted){ await requestPermission(); } setAddMode('scan'); setShowScanner(true);}} style={[styles.filterChip, addMode==='scan' && styles.filterChipActive, {flex:1}]}><Text style={[styles.filterText, addMode==='scan' && styles.filterTextActive, {textAlign:'center'}]}>📷 Scan</Text></TouchableOpacity>
-          </View>
-          {addMode==='from_inventory' && (
-            <View style={{backgroundColor:'#1E293B', borderRadius:10, marginBottom:12, borderWidth:1, borderColor:'#334155'}}>
-              <Picker selectedValue={selectedProductSku} onValueChange={setSelectedProductSku}>
-                <Picker.Item label="-- Pick from registered products --" value="" />
-                {products.map(p=> <Picker.Item key={p.sku} label={`${p.name} - ${p.sku} - ${ (p as any).barcode || ''}`} value={p.sku} />)}
-              </Picker>
-            </View>
-          )}
           <TextInput placeholder="Product Name" placeholderTextColor="#64748B" value={manualName} onChangeText={setManualName} style={styles.searchInput} />
-          <View style={{height:10}} />
-          <TextInput placeholder="SKU (optional)" placeholderTextColor="#64748B" value={manualSku} onChangeText={setManualSku} style={styles.searchInput} />
-          <View style={{height:10}} />
-          <TextInput placeholder="Barcode (auto-generated)" placeholderTextColor="#64748B" value={manualBarcode} onChangeText={setManualBarcode} style={styles.searchInput} />
           <View style={{height:10}} />
           {modalType==='requests' && (<><TextInput placeholder="Customer Name" placeholderTextColor="#64748B" value={customerName} onChangeText={setCustomerName} style={styles.searchInput} /><View style={{height:10}} /></>)}
           <TextInput placeholder="Quantity Needed" placeholderTextColor="#64748B" value={qty} onChangeText={setQty} keyboardType="numeric" style={styles.searchInput} />
-          <View style={{height:10}} />
-          <TextInput placeholder="Note / Supplier / Phone" placeholderTextColor="#64748B" value={note} onChangeText={setNote} style={styles.searchInput} />
-          {showScanner && (
-            <View style={{height:260, marginTop:16, borderRadius:12, overflow:'hidden', borderWidth:1, borderColor:'#334155'}}>
-              <CameraView style={{flex:1}} onBarcodeScanned={onBarcodeScanned} barcodeScannerSettings={{ barcodeTypes: ['qr','ean13','ean8','code128','upc_a','upc_e'] }} />
-            </View>
-          )}
-          <TouchableOpacity onPress={modalType==='market' ? savePurchase : saveRequest} style={[styles.primaryBtn, {marginTop:20}]}><Text style={styles.primaryBtnText}>Save with Barcode - Add to History</Text></TouchableOpacity>
+          <TouchableOpacity onPress={modalType==='market' ? savePurchase : saveRequest} style={[styles.primaryBtn, {marginTop:20}]}><Text style={styles.primaryBtnText}>Save</Text></TouchableOpacity>
           <TouchableOpacity onPress={()=>{setShowModal(false); setShowScanner(false);}} style={{marginTop:12, padding:14}}><Text style={{color:'#94A3B8', textAlign:'center'}}>Cancel</Text></TouchableOpacity>
         </View>
       </Modal>
