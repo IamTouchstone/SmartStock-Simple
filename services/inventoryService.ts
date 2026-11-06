@@ -27,6 +27,11 @@ export interface ProductItem {
   customerRequested?: boolean;
   isCustomerRequested?: boolean;
   customer_requested?: boolean;
+  customer_name?: string;
+  customerName?: string;
+  item_size?: string;
+  itemSize?: string;
+  image_url?: string;
 }
 
 export interface PurchaseOrder {
@@ -117,7 +122,6 @@ export async function getAuthSession(): Promise<{ token: string | null; user: an
     if (!user && auth && auth.currentUser) {
       try {
         token = await auth.currentUser.getIdToken();
-        // KEEP USER CHOSEN CURRENCY - don't hardcode USD if profile exists
         let savedCurrency = 'NGN';
         let savedSymbol = '₦';
         try {
@@ -197,7 +201,31 @@ export async function getInventory(orgId: string): Promise<ProductItem[]> {
       const branches = branchMap[sku] || [{ branch: 'Main Warehouse', quantity: 0 }, { branch: 'North Branch', quantity: 0 }, { branch: 'South Branch', quantity: 0 }];
       const total_stock = branches.reduce((sum, b) => sum + b.quantity, 0);
       products.push({
-        id: docSnap.id, sku, name: data.name || '', category: data.category || 'General', price: Number(data.price) || 0, cost: Number(data.cost) || 0, safety_stock: Number(data.safety_stock) || 10, total_stock, branches, org_id: orgId, created_at: data.created_at || new Date().toISOString(), barcode: data.barcode || '', expiry_date: data.expiry_date || null, sales_count: Number(data.sales_count) || 0, last_sold_date: data.last_sold_date || null,
+        id: docSnap.id, 
+        sku, 
+        name: data.name || '', 
+        category: data.category || 'General', 
+        price: Number(data.price) || 0, 
+        cost: Number(data.cost) || 0, 
+        safety_stock: Number(data.safety_stock) || 10, 
+        total_stock, 
+        branches, 
+        org_id: orgId, 
+        created_at: data.created_at || new Date().toISOString(), 
+        barcode: data.barcode || '', 
+        expiry_date: data.expiry_date || null, 
+        sales_count: Number(data.sales_count) || 0, 
+        last_sold_date: data.last_sold_date || null,
+        market_dates: data.market_dates || [],
+        marketDates: data.market_dates || [],
+        customer_requested: data.customer_requested || false,
+        customerRequested: data.customer_requested || false,
+        isCustomerRequested: data.customer_requested || false,
+        customer_name: data.customer_name || '',
+        customerName: data.customer_name || '',
+        item_size: data.item_size || '',
+        itemSize: data.item_size || '',
+        image_url: data.image_url || '',
       });
     });
     return products;
@@ -219,6 +247,11 @@ export async function addProduct(
     sales_count?: number;
     last_sold_date?: string | null;
     barcode?: string;
+    item_size?: string | null;
+    customer_requested?: boolean;
+    customer_name?: string | null;
+    market_dates?: string[];
+    image_url?: string | null;
   }
 ): Promise<{ success: boolean; error?: string; barcode?: string; sku?: string }> {
   try {
@@ -236,7 +269,23 @@ export async function addProduct(
       sku = `${sku}-${Math.floor(10 + Math.random()*90)}`;
     }
     const newProd = {
-      sku, name: item.name.trim(), category: item.category || 'General', price: Number(item.price) || 0, cost: Number(item.cost) || 0, safety_stock: Number(item.safety_stock) || 10, barcode: finalBarcode, expiry_date: item.expiry_date || null, sales_count: Number(item.sales_count) || 0, last_sold_date: item.last_sold_date || null, org_id: orgId, created_at: new Date().toISOString()
+      sku, 
+      name: item.name.trim(), 
+      category: item.category || 'General', 
+      price: Number(item.price) || 0, 
+      cost: Number(item.cost) || 0, 
+      safety_stock: Number(item.safety_stock) || 10, 
+      barcode: finalBarcode, 
+      expiry_date: item.expiry_date || null, 
+      sales_count: Number(item.sales_count) || 0, 
+      last_sold_date: item.last_sold_date || null, 
+      item_size: item.item_size || null,
+      customer_requested: item.customer_requested || false,
+      customer_name: item.customer_name || null,
+      market_dates: item.market_dates || [],
+      image_url: item.image_url || null,
+      org_id: orgId, 
+      created_at: new Date().toISOString()
     };
     await addDoc(collection(db, 'products'), newProd);
     const targetBranch = item.branch || 'Main Warehouse';
@@ -299,13 +348,42 @@ export async function scanIntake(sku: string, name: string, quantity: number, br
   }
 }
 
-export async function getDashboardSummary(orgId: string): Promise<{ totalProducts: number; lowStockAlerts: number; totalUnits: number; }> {
+// ✅ FIXED - Now returns expired + expiring counts for Dashboard
+export async function getDashboardSummary(orgId: string): Promise<{ totalProducts: number; lowStockAlerts: number; totalUnits: number; expiredCount: number; expiring3MonthsCount: number; }> {
   try {
     const products = await getInventory(orgId);
-    let lowStockAlerts = 0; let totalUnits = 0;
-    for (const p of products) { totalUnits += p.total_stock || 0; if ((p.total_stock||0) <= (p.safety_stock||10)) lowStockAlerts++; }
-    return { totalProducts: products.length, lowStockAlerts, totalUnits };
-  } catch (e) { return { totalProducts: 0, lowStockAlerts: 0, totalUnits: 0 }; }
+    let lowStockAlerts = 0;
+    let totalUnits = 0;
+    let expiredCount = 0;
+    let expiring3MonthsCount = 0;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const in90Days = new Date(today);
+    in90Days.setDate(in90Days.getDate() + 90);
+
+    for (const p of products) {
+      totalUnits += p.total_stock || 0;
+      if ((p.total_stock || 0) <= (p.safety_stock || 10)) lowStockAlerts++;
+
+      // Expiry check - handles string, Date, and Firestore Timestamp
+      if (p.expiry_date) {
+        let expDate: Date | null = null;
+        const raw: any = p.expiry_date;
+        if (raw instanceof Date) expDate = raw;
+        else if (typeof raw?.toDate === 'function') expDate = raw.toDate();
+        else if (typeof raw === 'string') expDate = new Date(raw);
+        if (expDate && !isNaN(expDate.getTime())) {
+          expDate.setHours(0, 0, 0, 0);
+          if (expDate < today) expiredCount++;
+          else if (expDate <= in90Days) expiring3MonthsCount++;
+        }
+      }
+    }
+    return { totalProducts: products.length, lowStockAlerts, totalUnits, expiredCount, expiring3MonthsCount };
+  } catch (e) {
+    return { totalProducts: 0, lowStockAlerts: 0, totalUnits: 0, expiredCount: 0, expiring3MonthsCount: 0 };
+  }
 }
 
 export async function getReorders(orgId: string): Promise<PurchaseOrder[]> {
@@ -342,7 +420,6 @@ export async function approvePO(poId: string, orgId: string): Promise<{ success:
   } catch (err: any) { return { success: false, error: err.message }; }
 }
 
-// --- FIXED: ALL READS BEFORE WRITES ---
 export async function approveRedistribution(sku: string, sourceBranch: string, targetBranch: string, quantity: number, orgId: string): Promise<{ success: boolean; error?: string }> {
   try {
     const cleanSku = sku.trim().toUpperCase();
@@ -355,17 +432,12 @@ export async function approveRedistribution(sku: string, sourceBranch: string, t
     const tgtRef = doc(db, 'inventory', tgtInvId);
     
     await runTransaction(db, async (transaction) => {
-      // STEP 1: READ BOTH DOCS FIRST - NO WRITES YET
       const srcDoc = await transaction.get(srcRef);
       const tgtDoc = await transaction.get(tgtRef);
-      
       if (!srcDoc.exists()) throw new Error(`No stock found for SKU ${cleanSku} at ${sourceBranch}.`);
       const srcQty = Number(srcDoc.data().quantity) || 0;
       if (srcQty < qty) throw new Error(`Insufficient stock at ${sourceBranch}. Available: ${srcQty}, Requested: ${qty}`);
-      
-      // STEP 2: NOW DO WRITES
       transaction.update(srcRef, { quantity: srcQty - qty, updated_at: new Date().toISOString() });
-      
       if (!tgtDoc.exists()) {
         transaction.set(tgtRef, { org_id: orgId, sku: cleanSku, branch: targetBranch, quantity: qty, updated_at: new Date().toISOString(), created_at: new Date().toISOString() });
       } else {

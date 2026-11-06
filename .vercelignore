@@ -1,0 +1,15 @@
+node_modules
+.expo
+.expo-shared
+android
+ios
+dist
+build
+.expo
+.eas
+web-build
+*.log
+.git
+*.apk
+*.aab
+store_assets_v1.0.1

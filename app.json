@@ -2,72 +2,103 @@
   "expo": {
     "name": "SmartStock",
     "slug": "smartstock",
-    "version": "1.0.1",
+    "version": "1.1.4",
     "orientation": "portrait",
-    "platforms": [
-      "android",
-      "ios",
-      "web"
-    ],
-    "icon": "./public/icons/icon-512.png",
+    "icon": "./assets/images/icon-512.png",
     "scheme": "smartstock",
-    "updates": {
-      "enabled": false
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B3B2E"
     },
-    "userInterfaceStyle": "automatic",
+    "updates": {
+      "enabled": false,
+      "checkAutomatically": "ON_ERROR_RECOVERY"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.smartstock.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Allow SmartStock to use your microphone for the voice agent.",
+        "NSCameraUsageDescription": "Allow SmartStock to scan barcodes",
+        "NSPhotoLibraryUsageDescription": "Allow SmartStock to access photos to read product labels"
+      }
+    },
     "android": {
-      "package": "com.smartstock.app",
-      "versionCode": 2,
       "adaptiveIcon": {
-        "foregroundImage": "./public/icons/adaptive-icon.png",
-        "backgroundColor": "#0A2E24"
+        "foregroundImage": "./assets/images/icon-512.png",
+        "backgroundColor": "#0B3B2E"
       },
+      "package": "com.smartstock.app",
+      "versionCode": 8,
       "permissions": [
-        "CAMERA",
-        "android.permission.SCHEDULE_EXACT_ALARM",
-        "android.permission.USE_EXACT_ALARM",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
       ]
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/images/icon-192.png"
     },
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
+        "expo-image-picker",
         {
-          "image": "./public/icons/splash.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#090D16"
+          "photosPermission": "Allow SmartStock to access photos to read product labels"
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow SmartStock to access your camera."
+          "cameraPermission": "Allow SmartStock to scan barcodes"
         }
       ],
-      "expo-secure-store",
-      "expo-build-properties",
-      "expo-status-bar",
-      "@react-native-community/datetimepicker",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow SmartStock to use your microphone for the voice agent."
+        }
+      ],
       [
         "expo-notifications",
         {
-          "icon": "./public/icons/icon-512.png",
-          "color": "#0A2E24",
+          "icon": "./assets/images/icon-72.png",
+          "color": "#0B3B2E",
           "sounds": []
         }
       ],
-      "expo-web-browser"
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false
+          }
+        }
+      ],
+      "expo-splash-screen"
     ],
+    "experiments": {
+      "typedRoutes": true
+    },
     "extra": {
-      "router": {},
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
       "eas": {
         "projectId": "9eec5173-cd3d-40f7-8d72-c5b7d988b649"
-      }
-    },
-    "owner": "iamtouchstone"
+      },
+      "apiUrl": "https://smartstock-main.vercel.app"
+    }
   }
 }
