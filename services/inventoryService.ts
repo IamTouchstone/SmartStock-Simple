@@ -124,20 +124,30 @@ export async function getAuthSession(): Promise<{ token: string | null; user: an
         token = await auth.currentUser.getIdToken();
         let savedCurrency = 'NGN';
         let savedSymbol = '₦';
+        let savedOrgName = '';
+        let savedName = '';
+        let savedPhone = '';
+        let savedOrgId = `ORG-${auth.currentUser.uid.slice(0, 6).toUpperCase()}`;
         try {
-          const profileDoc = await getDoc(doc(db, 'org_profiles', `ORG-${auth.currentUser.uid.slice(0, 6)}`));
+          const profileDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
           if (profileDoc.exists()) {
-            savedCurrency = profileDoc.data().currency || savedCurrency;
-            savedSymbol = profileDoc.data().currency_symbol || savedSymbol;
+            const d = profileDoc.data();
+            savedCurrency = d.currency || savedCurrency;
+            savedSymbol = d.currency_symbol || savedSymbol;
+            savedOrgName = d.org_name || '';
+            savedName = d.fullName || d.name || '';
+            savedPhone = d.phone || d.phone_number || d.phoneNumber || '';
+            savedOrgId = d.org_id || savedOrgId;
           }
         } catch {}
         user = {
           uid: auth.currentUser.uid,
           email: auth.currentUser.email,
-          name: auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split('@')[0] : 'Operator'),
+          name: savedName || auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split('@')[0] : 'Operator'),
           role: 'Owner',
-          org_id: `ORG-${auth.currentUser.uid.slice(0, 6)}`,
-          org_name: 'SmartStock Retail',
+          org_id: savedOrgId,
+          org_name: savedOrgName,
+          phone: savedPhone,
           currency: savedCurrency,
           currency_symbol: savedSymbol,
           emailVerified: auth.currentUser.emailVerified
@@ -152,18 +162,25 @@ export async function getAuthSession(): Promise<{ token: string | null; user: an
     if (auth && auth.currentUser) {
       try {
         const token = await auth.currentUser.getIdToken();
-        const user = {
+        let fallbackUser: any = {
           uid: auth.currentUser.uid,
           email: auth.currentUser.email,
           name: auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split('@')[0] : 'Operator'),
           role: 'Owner',
-          org_id: `ORG-${auth.currentUser.uid.slice(0, 6)}`,
-          org_name: 'SmartStock Retail',
+          org_id: `ORG-${auth.currentUser.uid.slice(0, 6).toUpperCase()}`,
+          org_name: '',
           currency: 'NGN',
           currency_symbol: '₦',
           emailVerified: auth.currentUser.emailVerified
         };
-        return { token, user };
+        try {
+          const profileDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+          if (profileDoc.exists()) {
+            const d = profileDoc.data();
+            fallbackUser = { ...fallbackUser, ...d };
+          }
+        } catch {}
+        return { token, user: fallbackUser };
       } catch (inner) {}
     }
     return { token: null, user: null };
@@ -198,7 +215,7 @@ export async function getInventory(orgId: string): Promise<ProductItem[]> {
     snapshot.forEach(docSnap => {
       const data = docSnap.data();
       const sku = (data.sku || '').toUpperCase();
-      const branches = branchMap[sku] || [{ branch: 'Main Warehouse', quantity: 0 }, { branch: 'North Branch', quantity: 0 }, { branch: 'South Branch', quantity: 0 }];
+      const branches = branchMap[sku] || [];
       const total_stock = branches.reduce((sum, b) => sum + b.quantity, 0);
       products.push({
         id: docSnap.id, 
@@ -290,11 +307,8 @@ export async function addProduct(
     await addDoc(collection(db, 'products'), newProd);
     const targetBranch = item.branch || 'Main Warehouse';
     const initQty = Number(item.quantity) || 0;
-    const branches = ['Main Warehouse', 'North Branch', 'South Branch'];
-    for (const b of branches) {
-      const invDocId = `${orgId}_${sku}_${b.replace(/\s+/g, '_')}`;
-      await setDoc(doc(db, 'inventory', invDocId), { org_id: orgId, sku, branch: b, quantity: b === targetBranch ? initQty : 0, updated_at: new Date().toISOString() });
-    }
+    const invDocId = `${orgId}_${sku}_${targetBranch.replace(/\s+/g, '_')}`;
+    await setDoc(doc(db, 'inventory', invDocId), { org_id: orgId, sku, branch: targetBranch, quantity: initQty, updated_at: new Date().toISOString() });
     return { success: true, barcode: finalBarcode, sku };
   } catch (err: any) {
     console.error('addProduct error:', err);
@@ -348,7 +362,6 @@ export async function scanIntake(sku: string, name: string, quantity: number, br
   }
 }
 
-// ✅ FIXED - Now returns expired + expiring counts for Dashboard
 export async function getDashboardSummary(orgId: string): Promise<{ totalProducts: number; lowStockAlerts: number; totalUnits: number; expiredCount: number; expiring3MonthsCount: number; }> {
   try {
     const products = await getInventory(orgId);
@@ -366,7 +379,6 @@ export async function getDashboardSummary(orgId: string): Promise<{ totalProduct
       totalUnits += p.total_stock || 0;
       if ((p.total_stock || 0) <= (p.safety_stock || 10)) lowStockAlerts++;
 
-      // Expiry check - handles string, Date, and Firestore Timestamp
       if (p.expiry_date) {
         let expDate: Date | null = null;
         const raw: any = p.expiry_date;
@@ -455,5 +467,5 @@ export async function approveRedistribution(sku: string, sourceBranch: string, t
 }
 
 export async function extractInvoiceWithOCR(_imageUri: string): Promise<{ invoiceNumber?: string; totalAmount?: number; extractedText: string; }> {
-  return { extractedText: '' };
+  throw new Error('Invoice OCR is not available yet. Please enter invoice details manually.');
 }
