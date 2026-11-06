@@ -4,15 +4,15 @@ import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { addProduct, generateUniqueBarcode, getAuthSession } from '../../services/inventoryService';
 
 type Msg = { role: 'user' | 'agent', text: string, image?: string, time?: string };
 
-const WEBSITE_URL = 'https://smartstock-main.vercel.app';
-
 export default function AgentScreen() {
+  const router = useRouter();
   const [msgs, setMsgs] = useState<Msg[]>([
-    { role: 'agent', text: 'Hi! I am SmartStock Agent. Tap Scan Barcode below to register a product, or tap SCAN ME above to visit the website.', time: new Date().toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', hour12: true }) }
+    { role: 'agent', text: 'Hi! I am SmartStock Agent. Tap SCAN below to register a product, or tap SCAN ME above to visit the website.', time: new Date().toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', hour12: true }) }
   ]);
   const [input, setInput] = useState('');
   const [saving, setSaving] = useState(false);
@@ -37,13 +37,11 @@ export default function AgentScreen() {
     if (shouldSpeak && role === 'agent') speak(text);
   };
 
-  // TOP BUTTON: Always scan a new website QR - opening is done in the Verify modal
   const handleTopScanMe = () => {
     setScanMode('website');
     openScanner();
   };
 
-  // BOTTOM BUTTON: Register only
   const handleBottomScanMe = () => {
     setScanMode('register');
     openScanner();
@@ -72,12 +70,15 @@ export default function AgentScreen() {
       const apiKey = process.env.EXPO_PUBLIC_OCR_API_KEY;
       if (!apiKey) throw new Error('OCR key not configured');
       const response = await fetch('https://api.ocr.space/parse/image', { method: 'POST', headers: { 'apikey': apiKey, 'Content-Type': 'application/x-www-form-urlencoded' }, body: `base64Image=data:image/jpeg;base64,${base64}&language=eng` });
-      const data = await response.json(); const text = data?.ParsedResults?.[0]?.ParsedText || '';
+      const data = await response.json();
+      const text = data?.ParsedResults?.[0]?.ParsedText || '';
       const lines = text.split('\n').filter((l: string) => l.trim().length > 2);
       const nameGuess = lines[0]?.slice(0, 60)?.trim() || '';
       const qtyMatch = text.match(/(\d+)\s*(g|kg|ml|l|pcs)/i);
       const sizeGuess = qtyMatch ? `${qtyMatch[1]}${qtyMatch[2].toLowerCase()}` : '';
-      setLastParsed({ name: nameGuess, imageUri: uri, qty: '1', detectedText: text });
+      const nafdacMatch = text.match(/NAFDAC[^0-9A-Z]*([A-Z0-9-]{4,})/i);
+      const nafdacNo = nafdacMatch ? nafdacMatch[1] : '';
+      setLastParsed({ name: nameGuess, imageUri: uri, qty: '1', detectedText: text, nafdacNo });
       setEditName(nameGuess); setEditQty('1'); setEditSize(sizeGuess);
       addMsg('agent', `I read ${nameGuess || 'label'}. Approve to save.`, undefined, true); setShowApproveModal(true);
     } catch (e) { addMsg('agent', 'Could not read label. Type name.', undefined, true); setLastParsed({ name: '', imageUri: uri, detectedText: '' }); setEditName(''); setEditSize(''); setShowApproveModal(true); }
@@ -129,22 +130,32 @@ export default function AgentScreen() {
     if (!editName.trim()) { setNameError(true); Alert.alert('Name Required', 'Type name'); return; }
     setNameError(false); setSaving(true);
     try {
-      const session = await getAuthSession(); const user = (session as any)?.user || session; const orgId = (user as any)?.org_id || 'ORG-DEMO-001';
-      let barcode = `BC-${Date.now()}`;
-      try { const r = await generateUniqueBarcode(orgId); if (r) barcode = r; } catch { }
+      const session = await getAuthSession();
+      const user = (session as any)?.user || null;
+      const orgId = user?.org_id;
+      if (!orgId || !user) {
+        Alert.alert('Login required', 'Please log in again to register products.');
+        router.replace('/phone-login');
+        return;
+      }
+      const barcode = await generateUniqueBarcode(orgId);
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Africa/Lagos' });
-      const dateString = now.toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' });
-      const fullTimeString = `${dateString} ${timeString}`;
-      await (addProduct as any)({
-        org_id: orgId, name: editName.trim(), sku: `SKU-${Date.now()}`, barcode,
+
+      const result = await addProduct({
+        org_id: orgId,
+        name: editName.trim(),
+        sku: `SKU-${Date.now()}`,
+        barcode,
         item_size: editSize || '',
         quantity: parseInt(editQty) || 1,
-        total_stock: parseInt(editQty) || 1,
-        category: 'General', price: 0, safety_stock: 10,
-        image_url: '',
-        created_at: now.toISOString(), created_time: timeString, created_date: dateString, registered_at: fullTimeString, timestamp: Date.now()
+        category: 'General',
+        price: 0,
+        cost: 0,
+        safety_stock: 10,
+        image_url: lastParsed?.imageUri || null,
       });
+      if (!result.success) throw new Error(result.error || 'Failed to save product');
       addMsg('agent', `Registered "${editName}" at ${timeString}!`, undefined, true);
       setShowApproveModal(false); setEditName(''); setEditQty('1'); setEditSize(''); setLastParsed(null);
     } catch (err: any) { Alert.alert('Register failed', err?.message || 'Error'); }
