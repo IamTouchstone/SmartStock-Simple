@@ -30,12 +30,12 @@ export default function RootLayout() {
   useEffect(() => {
     if (!isReady) return;
     const inTabs = segments[0] === '(tabs)';
-    // Not logged in + trying to go to tabs -> send to login
+    // Not logged in + trying to go to tabs -> send to register (login.tsx does not exist)
     if (!isLoggedIn && inTabs) {
-      router.replace('/login');
+      router.replace('/register');
     }
-    // Logged in + on index/login -> send to dashboard
-    if (isLoggedIn && !inTabs && (segments[0] === 'login' || segments[0] === 'index' || segments[0] === undefined)) {
+    // Logged in + on index/register/phone-login -> send to dashboard
+    if (isLoggedIn && !inTabs && (segments[0] === 'register' || segments[0] === 'phone-login' || segments[0] === 'index' || segments[0] === undefined)) {
       router.replace('/(tabs)/dashboard');
     }
   }, [isReady, isLoggedIn, segments, router]);
@@ -48,7 +48,7 @@ export default function RootLayout() {
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
-          <Stack.Screen name="login" />
+          <Stack.Screen name="register" />
           <Stack.Screen name="phone-login" />
           <Stack.Screen name="(tabs)" />
         </Stack>

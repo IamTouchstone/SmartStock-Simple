@@ -12,7 +12,7 @@ const WEBSITE_URL = 'https://smartstock-main.vercel.app';
 
 export default function AgentScreen() {
   const [msgs, setMsgs] = useState<Msg[]>([
-    { role: 'agent', text: 'Hi! I am SmartStock Agent. Tap Scan Barcode below to register a product, or tap Open Link above to visit the website.', time: new Date().toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', hour12: true }) }
+    { role: 'agent', text: 'Hi! I am SmartStock Agent. Tap Scan Barcode below to register a product, or tap SCAN ME above to visit the website.', time: new Date().toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', hour12: true }) }
   ]);
   const [input, setInput] = useState('');
   const [saving, setSaving] = useState(false);
@@ -37,12 +37,8 @@ export default function AgentScreen() {
     if (shouldSpeak && role === 'agent') speak(text);
   };
 
-  // TOP BUTTON: Open website / scanned link
+  // TOP BUTTON: Always scan a new website QR - opening is done in the Verify modal
   const handleTopScanMe = () => {
-    if (scannedLink) {
-      Linking.openURL(scannedLink);
-      return;
-    }
     setScanMode('website');
     openScanner();
   };
@@ -107,7 +103,7 @@ export default function AgentScreen() {
         setScannedLink(url);
         setShowVerifyModal(true);
         addMsg('user', `Scanned link`);
-        addMsg('agent', `Link found. Tap Open Link above to visit the website.`, undefined, true);
+        addMsg('agent', `Link found. Tap Open Website below to visit the website.`, undefined, true);
       } else {
         addMsg('agent', 'That is not a website QR. Scan a website QR code.', undefined, true);
       }
@@ -158,10 +154,10 @@ export default function AgentScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View><Text style={styles.headerTitle}>SmartStock Agent</Text><Text style={styles.headerSub}>{scannedLink ? 'Link ready - tap Open Link' : 'Scan below to register a product'}</Text></View>
+        <View><Text style={styles.headerTitle}>SmartStock Agent</Text><Text style={styles.headerSub}>{scannedLink ? 'Link ready - tap Open Website below' : 'Scan below to register a product'}</Text></View>
         <TouchableOpacity onPress={handleTopScanMe} style={styles.onBadge}>
           <Ionicons name="globe-outline" size={14} color="#FDF6E9" />
-          <Text style={styles.onText}>{scannedLink ? 'Open Link' : 'SCAN ME'}</Text>
+          <Text style={styles.onText}>SCAN ME</Text>
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.chat} contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
@@ -189,10 +185,10 @@ export default function AgentScreen() {
               <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#0B3B2E', alignItems: 'center', justifyContent: 'center' }}><Ionicons name="globe-outline" size={28} color="#FDF6E9" /></View>
               <Text style={{ color: '#FDF6E9', fontSize: 18, fontWeight: '800', marginTop: 12 }}>Website Link Found</Text>
               <Text style={{ color: '#8AA99B', fontSize: 13, marginTop: 6, textAlign: 'center' }}>Tap below to open it in your browser</Text>
-              <TouchableOpacity onPress={() => { Linking.openURL(scannedLink); setShowVerifyModal(false); }} style={{ backgroundColor: '#0B3B2E', paddingVertical: 16, width: '100%', borderRadius: 12, marginTop: 18, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
+              <TouchableOpacity onPress={() => { Linking.openURL(scannedLink); setScannedLink(''); setShowVerifyModal(false); }} style={{ backgroundColor: '#0B3B2E', paddingVertical: 16, width: '100%', borderRadius: 12, marginTop: 18, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
                 <Ionicons name="open-outline" size={18} color="#fff" /><Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Open Website</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setShowVerifyModal(false)} style={{ backgroundColor: '#1E3A30', paddingVertical: 14, width: '100%', borderRadius: 12, marginTop: 10, alignItems: 'center' }}>
+              <TouchableOpacity onPress={() => { setScannedLink(''); setShowVerifyModal(false); }} style={{ backgroundColor: '#1E3A30', paddingVertical: 14, width: '100%', borderRadius: 12, marginTop: 10, alignItems: 'center' }}>
                 <Text style={{ color: '#fff', fontWeight: '700' }}>Close</Text>
               </TouchableOpacity>
             </View>

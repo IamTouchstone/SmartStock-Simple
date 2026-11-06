@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -9,9 +9,16 @@ import { getAuthSession, saveAuthSession } from '../services/inventoryService';
 export default function EntryScreen() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
+
+    const go = (path) => {
+      if (!isMounted || hasNavigated.current) return;
+      hasNavigated.current = true;
+      router.replace(path);
+    };
 
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
@@ -45,25 +52,25 @@ export default function EntryScreen() {
 
           await saveAuthSession(idToken, userData);
           if (isMounted) {
-            router.replace('/(tabs)/dashboard');
+            go('/(tabs)/dashboard');
           }
         } else {
           // If no firebaseUser, check if valid stored session exists
           const session = await getAuthSession();
           if (session.user && session.token) {
             if (isMounted) {
-              router.replace('/(tabs)/dashboard');
+              go('/(tabs)/dashboard');
             }
           } else {
             if (isMounted) {
-              router.replace('/login');
+              go('/register');
             }
           }
         }
       } catch (err) {
         console.error('[Entry] Auth validation error:', err);
         if (isMounted) {
-          router.replace('/login');
+          go('/register');
         }
       } finally {
         if (isMounted) setChecking(false);
@@ -71,12 +78,12 @@ export default function EntryScreen() {
     });
 
     const fallbackTimeout = setTimeout(async () => {
-      if (!isMounted) return;
+      if (!isMounted || hasNavigated.current) return;
       const session = await getAuthSession();
-      if (session.user) {
-        router.replace('/(tabs)/dashboard');
+      if (session.user && session.token) {
+        go('/(tabs)/dashboard');
       } else {
-        router.replace('/login');
+        go('/register');
       }
     }, 2500);
 
