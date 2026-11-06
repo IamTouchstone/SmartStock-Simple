@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
+import { saveAuthSession } from '../services/inventoryService';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -29,33 +30,43 @@ export default function RegisterScreen() {
     setSaving(true);
     try {
       const cleanPhone = phone.trim();
-      const cred = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+      const cleanEmail = email.trim().toLowerCase();
+      const cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
       const uid = cred.user.uid;
       const org_id = `ORG-${uid.slice(0, 6).toUpperCase()}`;
 
-      // Save with ALL field names so old code finds it
-      await setDoc(doc(db, 'users', uid), {
+      const userData = {
         uid,
         org_id,
         org_name: orgName.trim(),
         name: fullName.trim(),
         fullName: fullName.trim(),
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         phone: cleanPhone,
         phone_number: cleanPhone,
         phoneNumber: cleanPhone,
         whatsapp: cleanPhone,
         role: 'Owner',
+        currency: 'NGN',
         currency_symbol: '₦',
         created_at: new Date().toISOString(),
-      });
+      };
 
-      Alert.alert('Success', 'Account created! Please log in.', [
-        { text: 'Go to Login', onPress: () => router.replace('/login') }
+      // Save with ALL field names so old code finds it
+      await setDoc(doc(db, 'users', uid), userData);
+
+      // Save local session so index.js / _layout.js see you as logged in
+      const idToken = await cred.user.getIdToken();
+      await saveAuthSession(idToken, userData);
+
+      Alert.alert('Success', 'Account created! Welcome to SmartStock.', [
+        { text: 'Continue', onPress: () => router.replace('/(tabs)/dashboard') }
       ]);
     } catch (e: any) {
       let msg = e.message;
       if (e.code === 'auth/email-already-in-use') msg = 'This email is already registered. Please log in.';
+      if (e.code === 'auth/invalid-email') msg = 'Enter a valid email address.';
+      if (e.code === 'auth/weak-password') msg = 'Password must be at least 6 characters.';
       Alert.alert('Register failed', msg);
     } finally {
       setSaving(false);
@@ -96,7 +107,7 @@ export default function RegisterScreen() {
         {saving ? <ActivityIndicator color="#0B3B2E" /> : <Text style={styles.saveText}>Create Account</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/login')} style={{ alignItems: 'center', marginTop: 18 }}>
+      <TouchableOpacity onPress={() => router.push('/phone-login')} style={{ alignItems: 'center', marginTop: 18 }}>
         <Text style={{ color: '#8AA99B' }}>Already have an account? <Text style={{ color: '#FDF6E9', fontWeight: '700' }}>Log In</Text></Text>
       </TouchableOpacity>
     </ScrollView>
@@ -107,7 +118,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F241D' },
   header: { alignItems: 'center', marginVertical: 20 },
   logo: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#0B3B2E', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#2A4A3E' },
-  title: { color: '#FDF6E9', fontSize: 24, fontWeight: '800', marginTop: 12 },
+  title: { color: '#F8FAFC', fontSize: 24, fontWeight: '800', marginTop: 12 },
   sub: { color: '#8AA99B', fontSize: 13, marginTop: 4, textAlign: 'center' },
   label: { color: '#8AA99B', fontSize: 11, fontWeight: '700', marginTop: 14, marginBottom: 6, letterSpacing: 0.5 },
   input: { backgroundColor: '#1E3A30', color: '#fff', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#2A4A3E' },
