@@ -5,7 +5,7 @@ import { getAuthSession, getInventory } from '../../services/inventoryService';
 import { saveIntegrationConfig, getIntegrationConfig, ADAPTERS } from '../../services/integrationService';
 
 export default function IntegrationsScreen() {
-  const [orgId, setOrgId] = useState('ORG-DEMO-001');
+  const [orgId, setOrgId] = useState('');
   const [selected, setSelected] = useState('iclass');
   const [apiUrl, setApiUrl] = useState('');
   const [apiKey, setApiKey] = useState('');
@@ -17,8 +17,9 @@ export default function IntegrationsScreen() {
   useEffect(() => { (async () => {
     try {
       const session: any = await getAuthSession();
-      const org = session?.user?.org_id || 'ORG-DEMO-001';
+      const org = session?.user?.org_id || '';
       setOrgId(org);
+      if (!org) return;
       const cfg: any = await getIntegrationConfig(org, selected);
       if (cfg) {
         setApiUrl(cfg.apiUrl || ''); setApiKey(cfg.apiKey || '');

@@ -58,24 +58,24 @@ jobs:
       - name: Copy & Rename APK
         run: |
           mkdir -p build-output
-          cp android/app/build/outputs/apk/release/app-release.apk build-output/SmartStock-v1.0.1.apk
+          cp android/app/build/outputs/apk/release/app-release.apk build-output/SmartStock-v1.1.4.apk
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SmartStock-v1.0.1-APK
-          path: build-output/SmartStock-v1.0.1.apk
+          name: SmartStock-v1.1.4-APK
+          path: build-output/SmartStock-v1.1.4.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/heads/main')
         with:
-          tag_name: v1.0.1-build-${{ github.run_number }}
-          name: SmartStock v1.0.1 (Build #${{ github.run_number }})
+          tag_name: v1.1.4-build-${{ github.run_number }}
+          name: SmartStock v1.1.4 (Build #${{ github.run_number }})
           body: |
-            ### SmartStock v1.0.1 Release APK
+            ### SmartStock v1.1.4 Release APK
             - Direct standalone APK download for Android
-            - Configured with Google OAuth proxy authentication
-            - Full Email/Password, Google, and Phone authentication
-            - Updated inventory catalog and compliant privacy policy
-          files: build-output/SmartStock-v1.0.1.apk
+            - Pure Expo + Firebase, real auth, no custom backend
+            - Expiry OCR Scanner with confirm modal
+            - Native EAS & GitHub Actions build pipeline
+          files: build-output/SmartStock-v1.1.4.apk

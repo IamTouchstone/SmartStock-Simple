@@ -5,11 +5,11 @@ import {
   View, 
   TouchableOpacity, 
   Alert,
-  StatusBar,
   ScrollView,
   ActivityIndicator,
   Image
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { signOut, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
@@ -83,7 +83,7 @@ export default function ProfileScreen() {
             console.warn('Sign out warning:', e);
           }
           await clearAuthSession();
-          router.replace('/login');
+          router.replace('/phone-login');
         }
       }
     ]);
@@ -93,7 +93,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#090D16" />
+      <StatusBar style="light" />
       
       <View style={styles.header}>
         <Text style={styles.title}>Account Profile</Text>
@@ -103,20 +103,22 @@ export default function ProfileScreen() {
         {/* User Card */}
         <View style={styles.userCard}>
           <Image
-            source={require('../../public/icons/icon-192.png')}
+            source={require('../../assets/images/icon-192.png')}
             style={styles.avatarLogo}
             resizeMode="contain"
           />
-          <Text style={styles.userName}>{user?.name || 'SmartStock Operator'}</Text>
-          <Text style={styles.userEmail}>{user?.email || auth.currentUser?.email || 'operator@smartstock.io'}</Text>
+          <Text style={styles.userName}>{user?.fullName || user?.name || ''}</Text>
+          <Text style={styles.userEmail}>{user?.email || auth.currentUser?.email || ''}</Text>
 
           <View style={styles.badgeRow}>
             <View style={styles.roleBadge}>
               <Text style={styles.roleBadgeText}>{user?.role || 'Owner'}</Text>
             </View>
-            <View style={styles.orgBadge}>
-              <Text style={styles.orgBadgeText}>{user?.org_name || 'SmartStock Retail'}</Text>
-            </View>
+            {user?.org_name ? (
+              <View style={styles.orgBadge}>
+                <Text style={styles.orgBadgeText}>{user.org_name}</Text>
+              </View>
+            ) : null}
           </View>
 
           {/* Email Verification Status */}
@@ -161,7 +163,7 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Version</Text>
-            <Text style={styles.infoValue}>1.0.1 (Production Release)</Text>
+            <Text style={styles.infoValue}>1.1.4 (Production Release)</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Database</Text>
@@ -177,7 +179,7 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Base Currency</Text>
-            <Text style={styles.infoValue}>{user?.currency || 'USD'} ({user?.currency_symbol || '$'})</Text>
+            <Text style={styles.infoValue}>{user?.currency || 'NGN'} ({user?.currency_symbol || '₦'})</Text>
           </View>
         </View>
 

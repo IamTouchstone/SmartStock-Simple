@@ -6,7 +6,7 @@ import { getAuthSession, generateUniqueBarcode, addProduct } from '../../service
 
 export default function AddRequestScreen() {
   const router = useRouter();
-  const [orgId, setOrgId] = useState('ORG-DEMO-001');
+  const [orgId, setOrgId] = useState('');
   const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -18,8 +18,12 @@ export default function AddRequestScreen() {
   useEffect(() => {
     (async () => {
       const { user } = await getAuthSession();
-      setOrgId(user?.org_id || 'ORG-DEMO-001');
-      setBarcode(await generateUniqueBarcode(user?.org_id || 'ORG-DEMO-001'));
+      if (!user?.org_id) {
+        router.replace('/phone-login');
+        return;
+      }
+      setOrgId(user.org_id);
+      setBarcode(await generateUniqueBarcode(user.org_id));
     })();
   }, []);
 

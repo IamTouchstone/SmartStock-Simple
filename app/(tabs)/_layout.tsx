@@ -47,14 +47,14 @@ export default function TabsLayout() {
         tabBarHideOnKeyboard: true,
       }}
     >
-      <Tabs.Screen name="dashboard" options={{ title: 'Dashboard', tabBarLabel: 'Home', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'grid' : 'grid-outline'} size={22} color={color} /> }} />
-      <Tabs.Screen name="inventory" options={{ title: 'Inventory', tabBarLabel: 'Stock', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'cube' : 'cube-outline'} size={22} color={color} /> }} />
-      <Tabs.Screen name="market" options={{ title: 'Market Buy', tabBarLabel: 'Market', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'storefront' : 'storefront-outline'} size={22} color={color} /> }} />
-      <Tabs.Screen name="requests" options={{ title: 'Requests', tabBarLabel: 'Requests', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'people' : 'people-outline'} size={22} color={color} /> }} />
-      <Tabs.Screen name="pos" options={{ title: 'POS', tabBarLabel: 'POS', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'calculator' : 'calculator-outline'} size={22} color={color} /> }} />
-      <Tabs.Screen name="add-item" options={{ title: 'Add Item', tabBarLabel: 'Add', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'add-circle' : 'add-circle-outline'} size={22} color={color} /> }} />
-      <Tabs.Screen name="agent" options={{ title: 'Agent', tabBarLabel: 'Agent', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline'} size={22} color={color} /> }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarLabel: 'Profile', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} /> }} />
+      <Tabs.Screen name="dashboard" options={{ title: 'Dashboard', tabBarLabel: 'Home', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'grid' : 'grid-outline'} size={22} color={color as any} /> }} />
+      <Tabs.Screen name="inventory" options={{ title: 'Inventory', tabBarLabel: 'Stock', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'cube' : 'cube-outline'} size={22} color={color as any} /> }} />
+      <Tabs.Screen name="market" options={{ title: 'Market Buy', tabBarLabel: 'Market', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'storefront' : 'storefront-outline'} size={22} color={color as any} /> }} />
+      <Tabs.Screen name="requests" options={{ title: 'Requests', tabBarLabel: 'Requests', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'people' : 'people-outline'} size={22} color={color as any} /> }} />
+      <Tabs.Screen name="pos" options={{ title: 'POS', tabBarLabel: 'POS', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'calculator' : 'calculator-outline'} size={22} color={color as any} /> }} />
+      <Tabs.Screen name="add-item" options={{ title: 'Add Item', tabBarLabel: 'Add', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'add-circle' : 'add-circle-outline'} size={22} color={color as any} /> }} />
+      <Tabs.Screen name="agent" options={{ title: 'Agent', tabBarLabel: 'Agent', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline'} size={22} color={color as any} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarLabel: 'Profile', tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color as any} /> }} />
       <Tabs.Screen name="index" options={{ href: null }} />
       <Tabs.Screen name="add-request" options={{ href: null }} />
     </Tabs>

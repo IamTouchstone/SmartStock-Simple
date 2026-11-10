@@ -14,12 +14,12 @@ async function getBranches(orgId: string): Promise<string[]> {
   try {
     const q = query(collection(db, 'branches'), where('org_id','==',orgId));
     const snap = await getDocs(q);
-    if (snap.empty) return ['Main Warehouse','North Branch','South Branch'];
+    if (snap.empty) return ['Main Warehouse'];
     return snap.docs.map(d => d.data().name as string);
-  } catch { return ['Main Warehouse','North Branch','South Branch']; }
+  } catch { return ['Main Warehouse']; }
 }
 
-type FilterType = 'all' | 'market' | 'requests' | 'customer' | 'fastest' | 'stagnated' | 'expiring90' | 'expiring' | 'countdown' | 'expired' | 'lowstock' | 'units';
+type FilterType = 'all' | 'market' | 'requests' | 'customer' | 'fastest' | 'stagnated' | 'expiring90' | 'expiring' | 'expiring7' | 'expiring30' | 'countdown' | 'expired' | 'lowstock' | 'units';
 
 function parseDate(raw: any): Date | null {
   if (!raw) return null;
@@ -39,10 +39,10 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [products, setProducts] = useState<ProductItem[]>([]);
-  const [branches, setBranches] = useState<string[]>(['Main Warehouse','North Branch','South Branch']);
+  const [branches, setBranches] = useState<string[]>(['Main Warehouse']);
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>(initialFilter || paramFilter || 'all');
-  const [userOrgId, setUserOrgId] = useState('ORG-DEMO-001');
+  const [userOrgId, setUserOrgId] = useState('');
   const [currencySymbol, setCurrencySymbol] = useState('₦');
   const [showMarketPicker, setShowMarketPicker] = useState(false);
   const [marketPickerProduct, setMarketPickerProduct] = useState<ProductItem | null>(null);
@@ -58,12 +58,13 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
   const [editPrice, setEditPrice] = useState('');
   const [editQty, setEditQty] = useState('');
   const [editSize, setEditSize] = useState('');
+  const [editExpiry, setEditExpiry] = useState('');
 
   const loadData = useCallback(async () => {
     try {
       const { user } = await getAuthSession();
-      if (!user) { router.replace('/login'); return; }
-      const orgId = user.org_id || 'ORG-DEMO-001';
+      if (!user) { router.replace('/phone-login'); return; }
+      const orgId = user.org_id || '';
       setUserOrgId(orgId);
       setCurrencySymbol(user.currency_symbol || '₦');
       const [items, bList] = await Promise.all([getInventory(orgId), getBranches(orgId)]);
@@ -118,6 +119,7 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
     setEditPrice(String(item.price));
     setEditQty(String(item.total_stock || 0));
     setEditSize((item as any).item_size || '');
+    setEditExpiry(item.expiry_date || '');
     setShowEditModal(true);
   };
 
@@ -128,7 +130,13 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
       const q = query(collection(db, 'products'), where('org_id','==',userOrgId), where('sku','==',editProduct.sku));
       const snap = await getDocs(q);
       if (!snap.empty) {
-        await updateDoc(snap.docs[0].ref, { name: editName.trim(), price: parseFloat(editPrice) || editProduct.price, item_size: editSize, updatedAt: new Date().toISOString() });
+        await updateDoc(snap.docs[0].ref, {
+          name: editName.trim(),
+          price: parseFloat(editPrice) || editProduct.price,
+          item_size: editSize,
+          expiry_date: editExpiry.trim() || null,
+          updatedAt: new Date().toISOString()
+        });
       }
       const newQty = parseInt(editQty) || 0;
       const invDocId = `${userOrgId}_${editProduct.sku}_Main_Warehouse`;
@@ -191,7 +199,7 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
     const withStock = item.branches?.filter(b=>b.quantity>0) || [];
     setFromBranch(withStock[0]?.branch || branches[0] || 'Main Warehouse');
     const other = branches.filter(b=> b !== (withStock[0]?.branch || branches[0]));
-    setToBranch(other[0] || branches[1] || 'North Branch');
+    setToBranch(other[0] || branches[1] || 'Main Warehouse');
     setTransferQty(''); setShowTransferModal(true);
   };
 
@@ -231,7 +239,10 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
       (p as any).barcode?.toLowerCase().includes(search.toLowerCase()) ||
       (p as any).customer_name?.toLowerCase().includes(search.toLowerCase())
     );
-    const now = new Date(); const in90Days = new Date(); in90Days.setDate(now.getDate()+90); const in30Days = new Date(); in30Days.setDate(now.getDate()+30);
+    const now = new Date();
+    const in7Days = new Date(); in7Days.setDate(now.getDate() + 7);
+    const in30Days = new Date(); in30Days.setDate(now.getDate() + 30);
+    const in90Days = new Date(); in90Days.setDate(now.getDate() + 90);
     switch(activeFilter) {
       case 'market': return list.filter(p => { const d = (p as any).marketDates || (p as any).market_dates; return (d && d.length>0) || (p.total_stock||0) <= (p.safety_stock||10); });
       case 'lowstock': return list.filter(p => (p.total_stock||0) <= (p.safety_stock||10));
@@ -239,8 +250,9 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
       case 'requests': case 'customer': return list.filter(p => isCustomerRequest(p));
       case 'fastest': return [...list].sort((a,b)=>((b as any).sales_count||0)-((a as any).sales_count||0)).slice(0,20);
       case 'stagnated': return list.filter(p => { const last = parseDate((p as any).last_sold_date); return !last || (now.getTime()-last.getTime())/(1000*60*60*24)>30; });
-      case 'expiring90': case 'expiring': return list.filter(p => { const exp = parseDate((p as any).expiry_date); return exp && exp>now && exp<=in90Days; });
-      case 'countdown': return list.filter(p => { const exp = parseDate((p as any).expiry_date); return exp && exp>now && exp<=in30Days; });
+      case 'expiring7': return list.filter(p => { const exp = parseDate((p as any).expiry_date); return exp && exp>=now && exp<=in7Days; });
+      case 'expiring30': case 'countdown': return list.filter(p => { const exp = parseDate((p as any).expiry_date); return exp && exp>=now && exp<=in30Days; });
+      case 'expiring90': case 'expiring': return list.filter(p => { const exp = parseDate((p as any).expiry_date); return exp && exp>=now && exp<=in90Days; });
       case 'expired': return list.filter(p => { const exp = parseDate((p as any).expiry_date); return exp && exp<now; });
       default: return list;
     }
@@ -249,14 +261,14 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
 
   const filters: { key: FilterType, label: string, icon: any }[] = [
     { key: 'all', label: 'All Items', icon: 'cube-outline' },
+    { key: 'expired', label: 'Expired', icon: 'alert-circle-outline' },
+    { key: 'expiring7', label: '≤7 Days', icon: 'alarm-outline' },
+    { key: 'expiring30', label: '≤30 Days', icon: 'time-outline' },
     { key: 'lowstock', label: 'Low Stock', icon: 'warning-outline' },
     { key: 'market', label: 'Market Purchase', icon: 'storefront-outline' },
     { key: 'requests', label: 'Customer Requests', icon: 'people-outline' },
     { key: 'fastest', label: 'Fastest Selling', icon: 'flame-outline' },
     { key: 'stagnated', label: 'Stagnated', icon: 'moon-outline' },
-    { key: 'expiring90', label: '3 Months Expiry', icon: 'hourglass-outline' },
-    { key: 'countdown', label: 'Countdown', icon: 'time-outline' },
-    { key: 'expired', label: 'Expired Alert', icon: 'alert-circle-outline' },
   ];
 
   const renderProductItem = ({ item }: { item: ProductItem }) => {
@@ -340,6 +352,7 @@ export default function InventoryScreen({ initialFilter }: { initialFilter?: Fil
           <Text style={styles.label}>SIZE / WEIGHT (e.g. 900g)</Text><TextInput value={editSize} onChangeText={setEditSize} style={styles.editInput} />
           <Text style={styles.label}>QUANTITY (Main Warehouse)</Text><TextInput value={editQty} onChangeText={setEditQty} keyboardType="numeric" style={styles.editInput} />
           <Text style={styles.label}>PRICE</Text><TextInput value={editPrice} onChangeText={setEditPrice} keyboardType="numeric" style={styles.editInput} />
+          <Text style={styles.label}>EXPIRY DATE (YYYY-MM-DD)</Text><TextInput value={editExpiry} onChangeText={setEditExpiry} placeholder="e.g. 2026-11-03" placeholderTextColor="#8AA99B" style={styles.editInput} />
           <View style={{flexDirection:'row', gap:10, marginTop:20}}>
             <TouchableOpacity onPress={()=>setShowEditModal(false)} style={[styles.primaryBtn,{flex:1, backgroundColor:'#1E3A30'}]}><Text style={styles.primaryBtnText}>Cancel</Text></TouchableOpacity>
             <TouchableOpacity onPress={saveEdit} style={[styles.primaryBtn,{flex:1}]}><Text style={styles.primaryBtnText}>Save Correction</Text></TouchableOpacity>

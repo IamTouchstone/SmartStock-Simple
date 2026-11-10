@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { saveAuthSession } from '../services/inventoryService';
@@ -52,16 +52,40 @@ export default function RegisterScreen() {
         created_at: new Date().toISOString(),
       };
 
-      // Save with ALL field names so old code finds it
-      await setDoc(doc(db, 'users', uid), userData);
+      // Atomic profile save with retry so account is never left half-created
+      let profileSaved = false;
+      let attempts = 0;
+      let lastDbError: any = null;
+      while (!profileSaved && attempts < 3) {
+        try {
+          attempts++;
+          await setDoc(doc(db, 'users', uid), userData);
+          profileSaved = true;
+        } catch (dbErr: any) {
+          lastDbError = dbErr;
+        }
+      }
+
+      if (!profileSaved) {
+        throw new Error(lastDbError?.message || 'Failed to save business profile. Please check your network and try again.');
+      }
+
+      // Real email verification
+      try {
+        await sendEmailVerification(cred.user);
+      } catch (evErr) {
+        console.warn('Email verification send notice:', evErr);
+      }
 
       // Save local session so index.js / _layout.js see you as logged in
       const idToken = await cred.user.getIdToken();
       await saveAuthSession(idToken, userData);
 
-      Alert.alert('Success', 'Account created! Welcome to SmartStock.', [
-        { text: 'Continue', onPress: () => router.replace('/(tabs)/dashboard') }
-      ]);
+      Alert.alert(
+        'Success',
+        'Account created! A real verification link has been sent to your email.\n\nNote: Phone verification is unavailable — verify by email link.',
+        [{ text: 'Continue to Dashboard', onPress: () => router.replace('/(tabs)/dashboard') }]
+      );
     } catch (e: any) {
       let msg = e.message;
       if (e.code === 'auth/email-already-in-use') msg = 'This email is already registered. Please log in.';

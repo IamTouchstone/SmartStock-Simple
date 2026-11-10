@@ -31,7 +31,8 @@ export default function MarketPlannerScreen() {
 
     (async () => {
       const { user } = await getAuthSession();
-      const org_id = user?.org_id || 'ORG-DEMO-001';
+      const org_id = user?.org_id;
+      if (!org_id) return;
       if (cancelled) return;
 
       const q = query(collection(db, 'products'), where('org_id', '==', org_id));

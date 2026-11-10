@@ -1,178 +1,192 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, Image } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  Alert, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { auth, db } from '../services/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { Ionicons } from '@expo/vector-icons';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebaseConfig';
+import { saveAuthSession } from '../services/inventoryService';
 
-const CURRENCIES = [
-  { code: 'NGN', symbol: '₦', label: 'Naira ₦' },
-  { code: 'USD', symbol: '$', label: 'Dollar $' },
-  { code: 'GHS', symbol: '₵', label: 'Ghana ₵' },
-  { code: 'KES', symbol: 'KSh', label: 'Kenya KSh' },
-];
-
-export default function PhoneLoginScreen() {
+export default function LoginScreen() {
   const router = useRouter();
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [confirmStep, setConfirmStep] = useState(false);
-  const [storeName, setStoreName] = useState('');
-  const [currency, setCurrency] = useState(CURRENCIES[0]);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
-  const handleSendCode = async () => {
-    const cleaned = phoneNumber.trim();
-    if (!cleaned || cleaned.length < 7) {
-      Alert.alert('Invalid Phone', 'Please enter a valid phone number with country code (e.g. +234...)');
+  const handleLogin = async () => {
+    if (!email.trim() || !email.includes('@')) {
+      Alert.alert('Missing', 'Enter a valid email address.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      Alert.alert('Missing', 'Enter your password (at least 6 characters).');
       return;
     }
     setLoading(true);
     try {
-      // In production mobile apps, Firebase phone auth uses RecaptchaVerifier or native auth.
-      // Here we prepare the OTP step for verification.
-      setConfirmStep(true);
-      Alert.alert('Verification Code Sent', `An SMS with your 6-digit verification code has been sent to ${cleaned}.`);
+      const cleanEmail = email.trim().toLowerCase();
+      const cred = await signInWithEmailAndPassword(auth, cleanEmail, password);
+      const uid = cred.user.uid;
+
+      let profile: any = null;
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (snap.exists()) profile = snap.data();
+      } catch (e) {
+        console.warn('Could not fetch user profile:', e);
+      }
+
+      const org_id = profile?.org_id || `ORG-${uid.slice(0, 6).toUpperCase()}`;
+      const userData = {
+        uid,
+        email: cred.user.email,
+        name: profile?.fullName || profile?.name || cred.user.displayName || cleanEmail.split('@')[0],
+        fullName: profile?.fullName || profile?.name || '',
+        role: profile?.role || 'Owner',
+        org_id: org_id.toUpperCase(),
+        org_name: profile?.org_name || '',
+        phone: profile?.phone || '',
+        currency: profile?.currency || 'NGN',
+        currency_symbol: profile?.currency_symbol || '₦',
+        emailVerified: cred.user.emailVerified,
+      };
+
+      const idToken = await cred.user.getIdToken();
+      await saveAuthSession(idToken, userData);
+      // _layout.tsx onAuthStateChanged will redirect to dashboard
     } catch (e: any) {
-      Alert.alert('Phone Sign-In Error', e.message || 'Failed to send verification code.');
+      let msg = e.message || 'Login failed.';
+      if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+        msg = 'Email or password is incorrect. Please try again.';
+      } else if (e.code === 'auth/invalid-email') {
+        msg = 'Enter a valid email address.';
+      } else if (e.code === 'auth/too-many-requests') {
+        msg = 'Too many failed attempts. Please wait a few minutes and try again.';
+      }
+      Alert.alert('Login Failed', msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyCode = async () => {
-    if (!verificationCode || verificationCode.trim().length < 4) {
-      Alert.alert('Invalid Code', 'Please enter the verification code sent to your phone.');
+  const handleForgotPassword = async () => {
+    if (!email.trim() || !email.includes('@')) {
+      Alert.alert('Enter Email', 'Type your email address first, then tap Forgot Password.');
       return;
     }
-    setLoading(true);
     try {
-      // Create or update user in Firestore for phone sign in
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        const refDoc = doc(db, 'users', currentUser.uid);
-        const snap = await getDoc(refDoc);
-        if (!snap.exists()) {
-          await setDoc(refDoc, {
-            phoneNumber: phoneNumber.trim(),
-            displayName: storeName || 'Phone User',
-            org_id: `ORG-${currentUser.uid.slice(0, 8).toUpperCase()}`,
-            store_name: storeName || 'My Store',
-            currency: currency.code,
-            currency_symbol: currency.symbol,
-            created_at: new Date().toISOString()
-          });
-        }
-      }
-      router.replace('/(tabs)/inventory');
+      await sendPasswordResetEmail(auth, email.trim().toLowerCase());
+      Alert.alert('Email Sent', `Password reset link sent to ${email.trim()}. Check your inbox.`);
     } catch (e: any) {
-      Alert.alert('Verification Failed', e.message || 'Invalid verification code.');
-    } finally {
-      setLoading(false);
+      Alert.alert('Error', e.message || 'Could not send reset email.');
     }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
-      <View style={styles.logoRow}>
-        <Image source={require('../public/icons/icon-192.png')} style={styles.logoImg} resizeMode="contain" />
-        <Text style={styles.logoText}>SmartStock</Text>
-      </View>
-
-      <Text style={styles.headerTitle}>Phone Authentication</Text>
-      <Text style={styles.subtitle}>Fast & secure access to your store inventory</Text>
-
-      {!confirmStep ? (
-        <>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="+234 800 000 0000"
-            placeholderTextColor="#64748B"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            keyboardType="phone-pad"
-            autoFocus
-          />
-
-          <Text style={styles.label}>Store Name (Optional)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="My Store"
-            placeholderTextColor="#64748B"
-            value={storeName}
-            onChangeText={setStoreName}
-          />
-
-          <Text style={styles.label}>Select Currency</Text>
-          <View style={styles.currRow}>
-            {CURRENCIES.map((c) => (
-              <TouchableOpacity
-                key={c.code}
-                style={[styles.currPill, currency.code === c.code && styles.currPillActive]}
-                onPress={() => setCurrency(c)}
-              >
-                <Text style={[styles.currText, currency.code === c.code && styles.currTextActive]}>{c.label}</Text>
-              </TouchableOpacity>
-            ))}
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView style={styles.container} contentContainerStyle={{ padding: 24, paddingBottom: 80 }}>
+        <View style={styles.header}>
+          <View style={styles.logoWrap}>
+            <Ionicons name="cube-outline" size={32} color="#FDF6E9" />
           </View>
+          <Text style={styles.title}>SmartStock</Text>
+          <Text style={styles.sub}>Log in to manage your inventory</Text>
+        </View>
 
-          <TouchableOpacity style={styles.primaryBtn} onPress={handleSendCode} disabled={loading}>
-            {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.primaryText}>Send Verification Code</Text>}
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Text style={styles.label}>Enter Verification Code</Text>
+        <Text style={styles.label}>EMAIL *</Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="you@email.com"
+          placeholderTextColor="#8AA99B"
+          style={styles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <Text style={styles.label}>PASSWORD *</Text>
+        <View style={[styles.input, styles.passRow]}>
           <TextInput
-            style={styles.input}
-            placeholder="6-digit code"
-            placeholderTextColor="#64748B"
-            value={verificationCode}
-            onChangeText={setVerificationCode}
-            keyboardType="number-pad"
-            autoFocus
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Your password"
+            placeholderTextColor="#8AA99B"
+            style={{ flex: 1, color: '#fff', fontSize: 15 }}
+            secureTextEntry={!showPass}
           />
-
-          <TouchableOpacity style={styles.primaryBtn} onPress={handleVerifyCode} disabled={loading}>
-            {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.primaryText}>Verify & Continue</Text>}
+          <TouchableOpacity onPress={() => setShowPass(!showPass)}>
+            <Ionicons name={showPass ? 'eye-off-outline' : 'eye-outline'} size={20} color="#8AA99B" />
           </TouchableOpacity>
+        </View>
 
-          <TouchableOpacity style={styles.secondaryBtn} onPress={() => setConfirmStep(false)}>
-            <Text style={styles.secondaryText}>Change Phone Number</Text>
-          </TouchableOpacity>
-        </>
-      )}
+        <TouchableOpacity onPress={handleForgotPassword} style={{ alignItems: 'flex-end', marginTop: 8 }}>
+          <Text style={{ color: '#8AA99B', fontSize: 13 }}>Forgot Password?</Text>
+        </TouchableOpacity>
 
-      <View style={styles.orRow}><View style={styles.line} /><Text style={styles.orText}>OR</Text><View style={styles.line} /></View>
+        <TouchableOpacity
+          onPress={handleLogin}
+          disabled={loading}
+          style={[styles.loginBtn, loading && { opacity: 0.6 }]}
+        >
+          {loading
+            ? <ActivityIndicator color="#0B3B2E" />
+            : <Text style={styles.loginText}>Log In</Text>
+          }
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.socialBtn} onPress={() => router.replace('/login')}>
-        <Text style={styles.socialText}>← Back to Email / Google Login</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert(
+              'Phone Verification Notice',
+              'Phone verification unavailable - verify by email link.',
+              [
+                { text: 'Verify by Email Link', onPress: handleForgotPassword },
+                { text: 'OK', style: 'default' }
+              ]
+            );
+          }}
+          style={{ alignItems: 'center', marginTop: 16 }}
+        >
+          <Text style={{ color: '#8AA99B', fontSize: 13, textDecorationLine: 'underline' }}>
+            Looking for Phone SMS OTP?
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/register')} style={{ alignItems: 'center', marginTop: 20 }}>
+          <Text style={{ color: '#8AA99B' }}>
+            New to SmartStock?{' '}
+            <Text style={{ color: '#FDF6E9', fontWeight: '700' }}>Create Account</Text>
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#090D16' },
-  logoRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 },
-  logoImg: { width: 52, height: 52, borderRadius: 12, backgroundColor: '#0F2E22' },
-  logoText: { color: '#fff', fontSize: 26, fontWeight: '800' },
-  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '700', textAlign: 'center', marginBottom: 4 },
-  subtitle: { color: '#94A3B8', fontSize: 13, textAlign: 'center', marginBottom: 24 },
-  label: { color: '#94A3B8', fontSize: 11, fontWeight: '700', marginTop: 12, marginBottom: 6, letterSpacing: 0.5 },
-  input: { backgroundColor: '#0F172A', color: '#fff', padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#334155' },
-  currRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  currPill: { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
-  currPillActive: { backgroundColor: '#22D3EE', borderColor: '#22D3EE' },
-  currText: { color: '#94A3B8', fontSize: 12, fontWeight: '600' },
-  currTextActive: { color: '#000' },
-  primaryBtn: { backgroundColor: '#22D3EE', padding: 15, borderRadius: 12, alignItems: 'center', marginTop: 20 },
-  primaryText: { color: '#000', fontWeight: '800', fontSize: 16 },
-  secondaryBtn: { borderWidth: 1, borderColor: '#334155', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 12 },
-  secondaryText: { color: '#94A3B8', fontWeight: '600' },
-  orRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 18 },
-  line: { flex: 1, height: 1, backgroundColor: '#1E293B' },
-  orText: { color: '#475569', marginHorizontal: 12, fontWeight: '700' },
-  socialBtn: { borderWidth: 1, borderColor: '#334155', padding: 14, borderRadius: 10, alignItems: 'center', marginBottom: 12 },
-  socialText: { color: '#E2E8F0', fontWeight: '600' },
+  container: { flex: 1, backgroundColor: '#0F241D' },
+  header: { alignItems: 'center', marginVertical: 32 },
+  logoWrap: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: '#0B3B2E', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: '#2A4A3E',
+  },
+  title: { color: '#FDF6E9', fontSize: 28, fontWeight: '800', marginTop: 14 },
+  sub: { color: '#8AA99B', fontSize: 13, marginTop: 6, textAlign: 'center' },
+  label: { color: '#8AA99B', fontSize: 11, fontWeight: '700', marginTop: 16, marginBottom: 6, letterSpacing: 0.5 },
+  input: {
+    backgroundColor: '#1E3A30', color: '#fff', padding: 14,
+    borderRadius: 12, borderWidth: 1, borderColor: '#2A4A3E', fontSize: 15,
+  },
+  passRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  loginBtn: {
+    backgroundColor: '#FDF6E9', padding: 16, borderRadius: 14,
+    alignItems: 'center', marginTop: 28,
+  },
+  loginText: { color: '#0B3B2E', fontWeight: '800', fontSize: 16 },
 });

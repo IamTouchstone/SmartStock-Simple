@@ -16,15 +16,6 @@
       "enabled": false,
       "checkAutomatically": "ON_ERROR_RECOVERY"
     },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.smartstock.app",
-      "infoPlist": {
-        "NSMicrophoneUsageDescription": "Allow SmartStock to use your microphone for the voice agent.",
-        "NSCameraUsageDescription": "Allow SmartStock to scan barcodes",
-        "NSPhotoLibraryUsageDescription": "Allow SmartStock to access photos to read product labels"
-      }
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon-512.png",

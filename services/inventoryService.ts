@@ -128,6 +128,7 @@ export async function getAuthSession(): Promise<{ token: string | null; user: an
         let savedName = '';
         let savedPhone = '';
         let savedOrgId = `ORG-${auth.currentUser.uid.slice(0, 6).toUpperCase()}`;
+        let savedRole = 'Owner';
         try {
           const profileDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
           if (profileDoc.exists()) {
@@ -137,15 +138,16 @@ export async function getAuthSession(): Promise<{ token: string | null; user: an
             savedOrgName = d.org_name || '';
             savedName = d.fullName || d.name || '';
             savedPhone = d.phone || d.phone_number || d.phoneNumber || '';
-            savedOrgId = d.org_id || savedOrgId;
+            savedOrgId = (d.org_id || savedOrgId).toUpperCase();
+            savedRole = d.role || savedRole;
           }
         } catch {}
         user = {
           uid: auth.currentUser.uid,
           email: auth.currentUser.email,
           name: savedName || auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split('@')[0] : 'Operator'),
-          role: 'Owner',
-          org_id: savedOrgId,
+          role: savedRole,
+          org_id: savedOrgId.toUpperCase(),
           org_name: savedOrgName,
           phone: savedPhone,
           currency: savedCurrency,
@@ -316,20 +318,44 @@ export async function addProduct(
   }
 }
 
-export async function recordSale(sku: string, orgId: string, qty: number) {
+export async function recordSale(sku: string, orgId: string, qty: number, branch: string = 'Main Warehouse') {
   try {
-    const q = query(collection(db, 'products'), where('org_id','==',orgId), where('sku','==',sku.toUpperCase()));
+    const cleanSku = sku.trim().toUpperCase();
+    const cleanBranch = (branch || 'Main Warehouse').replace(/\s+/g, '_');
+    const invDocId = `${orgId}_${cleanSku}_${cleanBranch}`;
+    const invRef = doc(db, 'inventory', invDocId);
+
+    const q = query(collection(db, 'products'), where('org_id', '==', orgId), where('sku', '==', cleanSku));
     const snap = await getDocs(q);
-    if (!snap.empty) {
-      const docRef = snap.docs[0].ref;
-      await runTransaction(db, async (t) => {
-        const d = await t.get(docRef);
-        if (!d.exists()) return;
-        const curSales = Number(d.data().sales_count)||0;
-        t.update(docRef, { sales_count: curSales + qty, last_sold_date: new Date().toISOString() });
-      });
-    }
-  } catch(e){ console.log('recordSale error', e); }
+
+    await runTransaction(db, async (t) => {
+      // 1. Update product sales_count and last_sold_date
+      if (!snap.empty) {
+        const prodRef = snap.docs[0].ref;
+        const prodDoc = await t.get(prodRef);
+        if (prodDoc.exists()) {
+          const curSales = Number(prodDoc.data().sales_count) || 0;
+          t.update(prodRef, { sales_count: curSales + qty, last_sold_date: new Date().toISOString() });
+        }
+      }
+
+      // 2. Decrement inventory quantity
+      const invDoc = await t.get(invRef);
+      if (invDoc.exists()) {
+        const curQty = Number(invDoc.data().quantity) || 0;
+        const newQty = Math.max(0, curQty - qty);
+        t.update(invRef, { quantity: newQty, updated_at: new Date().toISOString() });
+      }
+    });
+
+    await addDoc(collection(db, 'activity_logs'), {
+      org_id: orgId,
+      action: `POS Sale: -${qty} units of ${cleanSku}`,
+      timestamp: new Date().toISOString()
+    });
+  } catch(e) {
+    console.log('recordSale error', e);
+  }
 }
 
 export async function scanIntake(sku: string, name: string, quantity: number, branch: string, orgId: string): Promise<{ success: boolean; message: string }> {

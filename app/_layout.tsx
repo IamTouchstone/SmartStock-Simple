@@ -3,42 +3,45 @@ import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { getAuthSession } from '../services/inventoryService';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
+
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const [isReady, setIsReady] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        // ✅ FIXED: Check real session before deciding where to go
-        const { user } = await getAuthSession();
-        setIsLoggedIn(!!user);
-      } catch {
-        setIsLoggedIn(false);
-      } finally {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+      if (!isReady) {
         setIsReady(true);
-        await SplashScreen.hideAsync().catch(() => {});
+        SplashScreen.hideAsync().catch(() => {});
       }
-    })();
+    });
+    // Timeout fallback in case Firebase is slow
+    const timer = setTimeout(() => {
+      if (!isReady) {
+        setIsReady(true);
+        SplashScreen.hideAsync().catch(() => {});
+      }
+    }, 4000);
+    return () => { unsub(); clearTimeout(timer); };
   }, []);
 
   useEffect(() => {
-    if (!isReady) return;
+    if (!isReady || isLoggedIn === null) return;
     const inTabs = segments[0] === '(tabs)';
-    // Not logged in + trying to go to tabs -> send to register (login.tsx does not exist)
     if (!isLoggedIn && inTabs) {
-      router.replace('/register');
+      router.replace('/phone-login');
     }
-    // Logged in + on index/register/phone-login -> send to dashboard
-    if (isLoggedIn && !inTabs && (segments[0] === 'register' || segments[0] === 'phone-login' || segments[0] === 'index' || segments[0] === undefined)) {
+    if (isLoggedIn && !inTabs) {
       router.replace('/(tabs)/dashboard');
     }
-  }, [isReady, isLoggedIn, segments, router]);
+  }, [isReady, isLoggedIn, segments]);
 
   if (!isReady) return null;
 
@@ -46,10 +49,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <>
         <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack id="root" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
-          <Stack.Screen name="register" />
           <Stack.Screen name="phone-login" />
+          <Stack.Screen name="register" />
           <Stack.Screen name="(tabs)" />
         </Stack>
       </>

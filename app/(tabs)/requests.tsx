@@ -42,7 +42,11 @@ export default function CustomerRequestsScreen() {
     setSaving(true);
     try {
       const { user } = await getAuthSession();
-      const org_id = user?.org_id || 'ORG-DEMO-001';
+      const org_id = user?.org_id;
+      if (!org_id) {
+        Alert.alert('Login Required', 'Please log in to save customer requests.');
+        return;
+      }
       const barcode = await generateUniqueBarcode(org_id);
       await addProduct({
         name: name.trim(), barcode, sku: `REQ-${barcode.slice(-4)}`, category: 'Customer Request',

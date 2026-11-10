@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Alert, ActivityIndicator, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { getAuthSession, getInventory, ProductItem, recordSale } from '../../services/inventoryService';
 
 export default function POSScreen() {
+  const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [cart, setCart] = useState<{ sku: string, name: string, price: number, qty: number, barcode?: string }[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [orgId, setOrgId] = useState('ORG-DEMO-001');
+  const [orgId, setOrgId] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const scannedRef = useRef(false);
@@ -18,8 +20,8 @@ export default function POSScreen() {
   const load = useCallback(async () => {
     try {
       const { user } = await getAuthSession();
-      setOrgId(user?.org_id || 'ORG-DEMO-001');
-      const items = await getInventory(user?.org_id || 'ORG-DEMO-001');
+      setOrgId(user?.org_id || '');
+      const items = await getInventory(user?.org_id || '');
       setProducts(items);
     } catch (e) {
       console.log('POS load error', e);
@@ -71,7 +73,14 @@ export default function POSScreen() {
       Alert.alert('Added to Cart', `${found.name} - ${found.sku}`);
     } else {
       setSearch(code);
-      Alert.alert('Barcode Scanned', `Searching: ${code}`);
+      Alert.alert(
+        'Product Not Registered',
+        `No product found with barcode "${code}". Register it now?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Register', onPress: () => router.push({ pathname: '/(tabs)/add-item', params: { barcode: code } }) }
+        ]
+      );
     }
     // Allow next scan after 1s
     setTimeout(() => { scannedRef.current = false; }, 1000);

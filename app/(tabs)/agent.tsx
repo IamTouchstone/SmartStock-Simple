@@ -6,6 +6,8 @@ import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { addProduct, generateUniqueBarcode, getAuthSession } from '../../services/inventoryService';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
 
 type Msg = { role: 'user' | 'agent', text: string, image?: string, time?: string };
 
@@ -16,7 +18,7 @@ export default function AgentScreen() {
   ]);
   const [input, setInput] = useState('');
   const [saving, setSaving] = useState(false);
-  const [lastParsed, setLastParsed] = useState<{ name: string, imageUri?: string, qty?: string, detectedText?: string, nafdacNo?: string } | null>(null);
+  const [lastParsed, setLastParsed] = useState<{ name: string, imageUri?: string, qty?: string, detectedText?: string, nafdacNo?: string, barcode?: string } | null>(null);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showBarcode, setShowBarcode] = useState(false);
   const [scanMode, setScanMode] = useState<'website' | 'register'>('register');
@@ -119,11 +121,30 @@ export default function AgentScreen() {
     }
 
     addMsg('user', `Barcode: ${cleanData}`);
-    setEditName(`Product ${cleanData.slice(-6)}`); setEditQty('1'); setEditSize('');
-    setLastParsed({ name: `Product ${cleanData.slice(-6)}`, qty: '1', detectedText: `Barcode ${cleanData}`, imageUri: '' });
-    addMsg('agent', `Barcode ${cleanData} scanned.`, undefined, true);
-    setShowApproveModal(true);
-    setTimeout(() => { scannedRef.current = false; }, 1000);
+    (async () => {
+      try {
+        const session = await getAuthSession();
+        const orgId = session?.user?.org_id;
+        if (orgId) {
+          const q = query(collection(db, 'products'), where('org_id', '==', orgId), where('barcode', '==', cleanData));
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            const prod = snap.docs[0].data();
+            addMsg('agent', `Found in catalog:\n${prod.name}\nSKU: ${prod.sku}\nPrice: ₦${prod.price || 0}`, undefined, true);
+            setTimeout(() => { scannedRef.current = false; }, 1000);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Barcode lookup error:', e);
+      }
+
+      setEditName(`Product ${cleanData.slice(-6)}`); setEditQty('1'); setEditSize('');
+      setLastParsed({ name: `Product ${cleanData.slice(-6)}`, qty: '1', detectedText: `Barcode ${cleanData}`, imageUri: '', barcode: cleanData });
+      addMsg('agent', `Barcode ${cleanData} not in catalog. Review to register:`, undefined, true);
+      setShowApproveModal(true);
+      setTimeout(() => { scannedRef.current = false; }, 1000);
+    })();
   };
 
   const handleApproveAndRegister = async () => {
@@ -138,7 +159,7 @@ export default function AgentScreen() {
         router.replace('/phone-login');
         return;
       }
-      const barcode = await generateUniqueBarcode(orgId);
+      const barcode = lastParsed?.barcode || await generateUniqueBarcode(orgId);
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Africa/Lagos' });
 

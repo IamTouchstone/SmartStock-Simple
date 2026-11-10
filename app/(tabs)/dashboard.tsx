@@ -56,15 +56,15 @@ export default function DashboardScreen() {
     try {
       const { user } = await getAuthSession();
       if (!user) {
-        router.replace('/login');
+        router.replace('/phone-login');
         return;
       }
-      setOrgName(user.org_name || 'SmartStock Retail');
+      setOrgName(user.org_name || user.name || 'My Store');
       setUserRole(user.role || 'Staff');
       setUserEmail(user.email || '');
       setUserPhone(user.phone || '');
 
-      const summary: any = await getDashboardSummary(user.org_id || 'ORG-DEMO-001');
+      const summary: any = await getDashboardSummary(user.org_id);
       setStats({
         totalProducts: summary?.totalProducts ?? 0,
         lowStockAlerts: summary?.lowStockAlerts ?? 0,
