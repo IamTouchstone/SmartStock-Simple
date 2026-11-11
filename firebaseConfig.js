@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { initializeAuth, getReactNativePersistence, getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
@@ -14,7 +15,20 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-K4PKPPESB2"
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+let app;
+try {
+  console.log('[Firebase] Initializing Firebase app with projectId:', firebaseConfig.projectId);
+  if (getApps().length > 0) {
+    app = getApp();
+    console.log('[Firebase] Using existing Firebase app instance');
+  } else {
+    app = initializeApp(firebaseConfig);
+    console.log('[Firebase] Firebase app initialized successfully');
+  }
+} catch (e) {
+  console.error('[Firebase] Error initializing Firebase app:', e);
+  app = getApps()[0] || initializeApp(firebaseConfig);
+}
 
 let auth;
 try {
@@ -25,10 +39,17 @@ try {
       persistence: getReactNativePersistence(AsyncStorage),
     });
   }
+  console.log('[Firebase] Auth initialized with AsyncStorage persistence');
 } catch (e) {
-  auth = getAuth(app);
+  console.warn('[Firebase] Warning initializing auth persistence, falling back to getAuth:', e?.message || e);
+  try {
+    auth = getAuth(app);
+  } catch (err) {
+    console.error('[Firebase] Error in getAuth fallback:', err);
+  }
 }
 
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 export { auth };
 export default app;

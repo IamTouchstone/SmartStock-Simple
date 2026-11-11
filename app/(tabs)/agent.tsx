@@ -69,7 +69,7 @@ export default function AgentScreen() {
   const readLabel = async (base64: string, uri: string) => {
     setOcrLoading(true);
     try {
-      const apiKey = process.env.EXPO_PUBLIC_OCR_API_KEY;
+      const apiKey = process.env.EXPO_PUBLIC_OCR_API_KEY || 'K88349281388957';
       if (!apiKey) throw new Error('OCR key not configured');
       const response = await fetch('https://api.ocr.space/parse/image', { method: 'POST', headers: { 'apikey': apiKey, 'Content-Type': 'application/x-www-form-urlencoded' }, body: `base64Image=data:image/jpeg;base64,${base64}&language=eng` });
       const data = await response.json();

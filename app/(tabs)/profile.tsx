@@ -163,7 +163,7 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Version</Text>
-            <Text style={styles.infoValue}>1.1.4 (Production Release)</Text>
+            <Text style={styles.infoValue}>1.1.5 (Production Release)</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Database</Text>

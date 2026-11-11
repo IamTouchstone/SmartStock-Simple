@@ -2,7 +2,7 @@
   "expo": {
     "name": "SmartStock",
     "slug": "smartstock",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon-512.png",
     "scheme": "smartstock",
@@ -22,7 +22,7 @@
         "backgroundColor": "#0B3B2E"
       },
       "package": "com.smartstock.app",
-      "versionCode": 8,
+      "versionCode": 9,
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",

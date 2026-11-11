@@ -8,7 +8,15 @@
         "buildType": "apk"
       },
       "env": {
-        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true",
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyDouC2zVQ3lRDONRJJFootUbKVU9YKiJ0g",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "smartstock-424c3.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "smartstock-424c3",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "smartstock-424c3.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "283866117860",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:283866117860:web:14d344ed21d7d2a4d6def1",
+        "EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-K4PKPPESB2",
+        "EXPO_PUBLIC_OCR_API_KEY": "K88349281388957"
       }
     },
     "production": {
@@ -16,7 +24,15 @@
         "buildType": "apk"
       },
       "env": {
-        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true",
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyDouC2zVQ3lRDONRJJFootUbKVU9YKiJ0g",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "smartstock-424c3.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "smartstock-424c3",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "smartstock-424c3.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "283866117860",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:283866117860:web:14d344ed21d7d2a4d6def1",
+        "EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-K4PKPPESB2",
+        "EXPO_PUBLIC_OCR_API_KEY": "K88349281388957"
       }
     }
   }

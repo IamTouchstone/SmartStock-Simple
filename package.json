@@ -1,6 +1,6 @@
 {
   "name": "smartstock-inventory-core",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "AI-powered retail operating system focused on predictive inventory intelligence.",
   "main": "expo-router/entry",
   "scripts": {
