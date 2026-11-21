@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { addProduct, generateUniqueBarcode, getAuthSession } from '../../services/inventoryService';
 
 export default function CustomerRequestsScreen() {
@@ -17,6 +18,29 @@ export default function CustomerRequestsScreen() {
   const [showPicker, setShowPicker] = useState(false);
   const [showExpiryPicker, setShowExpiryPicker] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [barcode, setBarcode] = useState('');
+  const [scannerVisible, setScannerVisible] = useState(false);
+  const [scanned, setScanned] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+
+  const handleOpenScanner = async () => {
+    setScanned(false);
+    if (!permission?.granted) {
+      const { granted } = await requestPermission();
+      if (!granted) { Alert.alert('Permission Denied', 'Camera permission required.'); return; }
+    }
+    setScannerVisible(true);
+  };
+
+  const handleBarcodeScanned = ({ data }: { data: string }) => {
+    if (scanned) return;
+    setScanned(true);
+    setScannerVisible(false);
+    if (!data) return;
+    const trimmed = data.trim();
+    setBarcode(trimmed);
+    if (!name.trim()) setName(trimmed);
+  };
 
   const addDate = (e: any, date?: Date) => {
     setShowPicker(false);
@@ -34,6 +58,7 @@ export default function CustomerRequestsScreen() {
   };
 
   const handleSave = async () => {
+    if (saving) return;
     if (!name.trim()) return Alert.alert('Missing Name', 'Enter product name.');
     if (!sellingPrice || Number(sellingPrice) <= 0) return Alert.alert('Missing Price', 'Enter selling price.');
     if (unitCost && Number(unitCost) > Number(sellingPrice)) {
@@ -47,19 +72,26 @@ export default function CustomerRequestsScreen() {
         Alert.alert('Login Required', 'Please log in to save customer requests.');
         return;
       }
-      const barcode = await generateUniqueBarcode(org_id);
-      await addProduct({
-        name: name.trim(), barcode, sku: `REQ-${barcode.slice(-4)}`, category: 'Customer Request',
-        price: Number(sellingPrice) || 0, cost: Number(unitCost) || 0,
-        quantity: Number(qty) || 10, total_stock: Number(qty) || 10, safety_stock: Number(safety) || 10,
-        expiry_date: expiry || '',
-        org_id, branch: 'Main Warehouse',
-        customer_requested: customerRequested, market_dates: marketDates,
-        customer_name: customerName.trim() || 'Walk-in Customer', item_size: '',
-        branches: [{ branch: 'Main Warehouse', quantity: Number(qty) || 10 }]
-      } as any);
+      const finalBarcode = barcode || await generateUniqueBarcode(org_id);
+      const res = await Promise.race([
+        addProduct({
+          name: name.trim(), barcode: finalBarcode, sku: `REQ-${finalBarcode.slice(-4)}`, category: 'Customer Request',
+          price: Number(sellingPrice) || 0, cost: Number(unitCost) || 0,
+          quantity: Number(qty) || 10, total_stock: Number(qty) || 10, safety_stock: Number(safety) || 10,
+          expiry_date: expiry || '',
+          org_id, branch: 'Main Warehouse',
+          customer_requested: customerRequested, market_dates: marketDates,
+          customer_name: customerName.trim() || 'Walk-in Customer', item_size: '',
+          branches: [{ branch: 'Main Warehouse', quantity: Number(qty) || 10 }]
+        } as any),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Save timed out after 15s. Check internet / Firestore rules.')), 15000)),
+      ]) as any;
+      if (res && res.success === false) {
+        Alert.alert('Save Failed', res.error || 'Failed to save. Check Firestore rules.');
+        return;
+      }
       Alert.alert('Saved', 'Product + Market Plan saved to Customer Requests → Check Market tab');
-      setMarketDates([]); setName(''); setCustomerName(''); setSellingPrice(''); setUnitCost(''); setQty('10'); setSafety('10'); setExpiry('');
+      setMarketDates([]); setName(''); setCustomerName(''); setSellingPrice(''); setUnitCost(''); setQty('10'); setSafety('10'); setExpiry(''); setBarcode('');
     } catch (e: any) {
       Alert.alert('Save failed - check Firestore Rules', e.message);
     } finally {
@@ -72,8 +104,15 @@ export default function CustomerRequestsScreen() {
       <Text style={styles.title}>Customer Request</Text>
       <Text style={styles.sub}>Add item a customer asked for + plan market trip</Text>
 
-      <Text style={styles.label}>PRODUCT NAME *</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="e.g. AptaJunior" style={styles.input} placeholderTextColor="#8AA99B" />
+      <Text style={styles.label}>PRODUCT NAME * - SCAN OR TYPE</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <TextInput value={name} onChangeText={setName} placeholder="e.g. AptaJunior - type or scan" style={[styles.input, { flex: 1 }]} placeholderTextColor="#8AA99B" />
+        <TouchableOpacity onPress={handleOpenScanner} style={styles.scanBtn}>
+          <Ionicons name="barcode-outline" size={15} color="#FDF6E9" />
+          <Text style={styles.scanBtnText}>Scan</Text>
+        </TouchableOpacity>
+      </View>
+      {barcode ? <Text style={{ color: '#8AA99B', fontSize: 12, marginTop: 6 }}>Barcode: {barcode}</Text> : null}
 
       <Text style={styles.label}>CUSTOMER NAME</Text>
       <TextInput value={customerName} onChangeText={setCustomerName} placeholder="Walk-in Customer" style={styles.input} placeholderTextColor="#8AA99B" />
@@ -85,7 +124,7 @@ export default function CustomerRequestsScreen() {
         </View>
         <View style={{ width: 12 }} />
         <View style={{ flex: 1 }}>
-          <Text style={styles.label}>UNIT COST (₦)</Text>
+          <Text style={styles.label}>ESTIMATED MARKET UNIT COST (₦)</Text>
           <TextInput value={unitCost} onChangeText={setUnitCost} keyboardType="numeric" style={styles.input} placeholder="11000" placeholderTextColor="#8AA99B" />
         </View>
       </View>
@@ -145,6 +184,25 @@ export default function CustomerRequestsScreen() {
 
       {showPicker && <DateTimePicker value={new Date()} mode="date" display="default" onChange={addDate} />}
       {showExpiryPicker && <DateTimePicker value={new Date()} mode="date" display="default" onChange={addExpiryDate} />}
+
+      <Modal visible={scannerVisible} animationType="slide" statusBarTranslucent={true}>
+        <View style={{ flex: 1, backgroundColor: 'black' }}>
+          <CameraView style={{ flex: 1 }} facing="back" onBarcodeScanned={scanned ? undefined : handleBarcodeScanned} barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'qr'] }}>
+            <View style={{ paddingTop: 60, alignItems: 'center' }}>
+              <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>Point at Barcode</Text>
+              <Text style={{ color: '#CBD5E1', fontSize: 13, marginTop: 6 }}>Or close and type the product name</Text>
+            </View>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ width: 300, height: 200, borderWidth: 2, borderColor: '#FFF', borderRadius: 12 }} />
+            </View>
+            <View style={{ paddingBottom: 40, alignItems: 'center' }}>
+              <TouchableOpacity onPress={() => setScannerVisible(false)} style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 30, paddingVertical: 12, borderRadius: 20 }}>
+                <Text style={{ color: 'white', fontWeight: '600' }}>Cancel - Type Instead</Text>
+              </TouchableOpacity>
+            </View>
+          </CameraView>
+        </View>
+      </Modal>
     </ScrollView>
   )
 }
@@ -168,5 +226,7 @@ const styles = StyleSheet.create({
   datePill: { backgroundColor: '#0B3B2E', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: '#2A4A3E' },
   datePillText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   saveBtn: { backgroundColor: '#FDF6E9', padding: 18, borderRadius: 16, marginTop: 24, alignItems: 'center' },
-  saveText: { color: '#0B3B2E', fontWeight: '800', fontSize: 16 }
+  saveText: { color: '#0B3B2E', fontWeight: '800', fontSize: 16 },
+  scanBtn: { backgroundColor: '#1E3A30', paddingVertical: 14, paddingHorizontal: 14, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: '#2A4A3E' },
+  scanBtnText: { color: '#FDF6E9', fontWeight: '700', fontSize: 14 },
 });

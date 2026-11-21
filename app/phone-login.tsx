@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
   Alert, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { saveAuthSession } from '../services/inventoryService';
+
+const VALID_ROLES = ['Owner', 'Admin', 'Manager', 'Supervisor', 'Staff'] as const;
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !email.includes('@')) {
@@ -26,28 +29,64 @@ export default function LoginScreen() {
       Alert.alert('Missing', 'Enter your password (at least 6 characters).');
       return;
     }
+    if (loading) return;
     setLoading(true);
     try {
       const cleanEmail = email.trim().toLowerCase();
-      const cred = await signInWithEmailAndPassword(auth, cleanEmail, password);
+      // FIX 4: 15s timeout - Login never spins forever
+      const cred = await Promise.race([
+        signInWithEmailAndPassword(auth, cleanEmail, password),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Login timed out after 15s. Check internet and try again.')), 15000)),
+      ]);
       const uid = cred.user.uid;
 
+      // Profile is REQUIRED. No fallback to Owner, no invented org_id.
       let profile: any = null;
       try {
-        const snap = await getDoc(doc(db, 'users', uid));
+        const snap = await Promise.race([
+          getDoc(doc(db, 'users', uid)),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Profile load timed out.')), 15000)),
+        ]);
         if (snap.exists()) profile = snap.data();
       } catch (e) {
         console.warn('Could not fetch user profile:', e);
       }
 
-      const org_id = profile?.org_id || `ORG-${uid.slice(0, 6).toUpperCase()}`;
+      if (!profile) {
+        await signOut(auth);
+        Alert.alert(
+          'Profile Incomplete',
+          'Your account has no profile. Please contact your store Owner / Admin to complete your setup. You have been signed out.'
+        );
+        return;
+      }
+
+      if (!profile.org_id || typeof profile.org_id !== 'string' || !profile.org_id.trim()) {
+        await signOut(auth);
+        Alert.alert(
+          'Profile Incomplete',
+          'Your account is not assigned to an organisation. Please contact your store Owner / Admin.'
+        );
+        return;
+      }
+
+      if (!profile.role || !VALID_ROLES.includes(profile.role)) {
+        await signOut(auth);
+        Alert.alert(
+          'Profile Incomplete',
+          'Your account has no valid role assigned. Please contact your store Owner / Admin. You have been signed out.'
+        );
+        return;
+      }
+
+      const org_id = profile.org_id.toUpperCase();
       const userData = {
         uid,
         email: cred.user.email,
         name: profile?.fullName || profile?.name || cred.user.displayName || cleanEmail.split('@')[0],
         fullName: profile?.fullName || profile?.name || '',
-        role: profile?.role || 'Owner',
-        org_id: org_id.toUpperCase(),
+        role: profile.role,
+        org_id,
         org_name: profile?.org_name || '',
         phone: profile?.phone || '',
         currency: profile?.currency || 'NGN',
@@ -66,6 +105,8 @@ export default function LoginScreen() {
         msg = 'Enter a valid email address.';
       } else if (e.code === 'auth/too-many-requests') {
         msg = 'Too many failed attempts. Please wait a few minutes and try again.';
+      } else if (e.code === 'auth/network-request-failed') {
+        msg = 'No internet. Check connection and try again.';
       }
       Alert.alert('Login Failed', msg);
     } finally {
@@ -78,11 +119,18 @@ export default function LoginScreen() {
       Alert.alert('Enter Email', 'Type your email address first, then tap Forgot Password.');
       return;
     }
+    if (forgotLoading) return;
+    setForgotLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email.trim().toLowerCase());
+      await Promise.race([
+        sendPasswordResetEmail(auth, email.trim().toLowerCase()),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Request timed out after 15s. Check internet.')), 15000)),
+      ]);
       Alert.alert('Email Sent', `Password reset link sent to ${email.trim()}. Check your inbox.`);
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Could not send reset email.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -90,8 +138,13 @@ export default function LoginScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView style={styles.container} contentContainerStyle={{ padding: 24, paddingBottom: 80 }}>
         <View style={styles.header}>
+          {/* FIX 3: Real SmartStock logo in the circle - same asset, no cube icon, no placeholder */}
           <View style={styles.logoWrap}>
-            <Ionicons name="cube-outline" size={32} color="#FDF6E9" />
+            <Image
+              source={require('../assets/images/logo-horizontal-light.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.title}>SmartStock</Text>
           <Text style={styles.sub}>Log in to manage your inventory</Text>
@@ -124,8 +177,8 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={handleForgotPassword} style={{ alignItems: 'flex-end', marginTop: 8 }}>
-          <Text style={{ color: '#8AA99B', fontSize: 13 }}>Forgot Password?</Text>
+        <TouchableOpacity onPress={handleForgotPassword} disabled={forgotLoading} style={{ alignItems: 'flex-end', marginTop: 8 }}>
+          {forgotLoading ? <ActivityIndicator size="small" color="#8AA99B" /> : <Text style={{ color: '#8AA99B', fontSize: 13 }}>Forgot Password?</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -172,9 +225,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F241D' },
   header: { alignItems: 'center', marginVertical: 32 },
   logoWrap: {
-    width: 72, height: 72, borderRadius: 36,
+    width: 96, height: 96, borderRadius: 48,
     backgroundColor: '#0B3B2E', alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: '#2A4A3E',
+    overflow: 'hidden',
+    padding: 10,
+  },
+  logoImage: {
+    width: 76, height: 76,
   },
   title: { color: '#FDF6E9', fontSize: 28, fontWeight: '800', marginTop: 14 },
   sub: { color: '#8AA99B', fontSize: 13, marginTop: 6, textAlign: 'center' },

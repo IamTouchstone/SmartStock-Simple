@@ -75,7 +75,8 @@
           }
         }
       ],
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-speech-recognition"
     ],
     "experiments": {
       "typedRoutes": true

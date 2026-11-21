@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
@@ -100,7 +100,7 @@ export default function RegisterScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 80 }}>
       <View style={styles.header}>
-        <View style={styles.logo}><Ionicons name="cube-outline" size={30} color="#FDF6E9" /></View>
+        <Image source={require('../assets/images/logo-horizontal-light.png')} style={{ width: 200, height: 52 }} resizeMode="contain" />
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.sub}>Start managing your shop with SmartStock</Text>
       </View>

@@ -58,6 +58,27 @@ export interface RedistributionItem {
   org_id: string;
 }
 
+// --- FIX 4: Timeout helper - never spin forever ---
+const SAVE_TIMEOUT_MS = 15000;
+
+function withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after 15s. Check internet / Firestore rules.`)), SAVE_TIMEOUT_MS)
+    ),
+  ]);
+}
+
+function friendlyError(err: any): string {
+  const msg = String(err?.message || err || '');
+  if (msg.includes('permission') || msg.includes('PERMISSION_DENIED')) return 'Save failed: Permission denied - check Firestore Rules for products + inventory.';
+  if (msg.includes('timed out')) return `Save failed: ${msg}`;
+  if (msg.includes('offline') || msg.includes('network') || msg.includes('Failed to get document') || msg.includes('Unavailable')) return 'Save failed: No internet / Firestore unreachable. Check connection and retry.';
+  if (msg.includes('Missing or insufficient')) return 'Save failed: Permission denied - check Firestore Rules.';
+  return `Save failed: ${msg || 'Unknown error'}`;
+}
+
 function ean13CheckDigit(code12: string): string {
   let sum = 0;
   for (let i = 0; i < 12; i++) {
@@ -82,7 +103,7 @@ export async function generateUniqueBarcode(orgId: string): Promise<string> {
   while (tries < 8) {
     const barcode = generateBarcodeNumber();
     const q = query(collection(db, 'products'), where('org_id', '==', orgId), where('barcode', '==', barcode));
-    const snap = await getDocs(q);
+    const snap = await withTimeout(getDocs(q), 'Checking barcode uniqueness');
     if (snap.empty) return barcode;
     tries++;
   }
@@ -130,7 +151,7 @@ export async function getAuthSession(): Promise<{ token: string | null; user: an
         let savedOrgId = `ORG-${auth.currentUser.uid.slice(0, 6).toUpperCase()}`;
         let savedRole = 'Owner';
         try {
-          const profileDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+          const profileDoc = await withTimeout(getDoc(doc(db, 'users', auth.currentUser.uid)), 'Loading user profile');
           if (profileDoc.exists()) {
             const d = profileDoc.data();
             savedCurrency = d.currency || savedCurrency;
@@ -203,10 +224,10 @@ export async function clearAuthSession() {
 export async function getInventory(orgId: string): Promise<ProductItem[]> {
   try {
     const q = query(collection(db, 'products'), where('org_id', '==', orgId));
-    const snapshot = await getDocs(q);
+    const snapshot = await withTimeout(getDocs(q), 'Loading products');
     const products: ProductItem[] = [];
     const invQ = query(collection(db, 'inventory'), where('org_id', '==', orgId));
-    const invSnapshot = await getDocs(invQ);
+    const invSnapshot = await withTimeout(getDocs(invQ), 'Loading inventory');
     const branchMap: { [sku: string]: { branch: string; quantity: number }[] } = {};
     invSnapshot.forEach(docSnap => {
       const data = docSnap.data();
@@ -274,6 +295,11 @@ export async function addProduct(
   }
 ): Promise<{ success: boolean; error?: string; barcode?: string; sku?: string }> {
   try {
+    // FIX 4: Validate before any Firestore call - never send undefined to Firestore
+    if (!item?.org_id?.trim()) return { success: false, error: 'Save failed: Missing field: org_id - please log in again.' };
+    if (!item?.name?.trim()) return { success: false, error: 'Save failed: Missing field: Product Name.' };
+    if (item.price === undefined || item.price === null || isNaN(Number(item.price))) return { success: false, error: 'Save failed: Missing field: Price must be a number.' };
+
     const orgId = item.org_id;
     let finalBarcode = item.barcode?.trim();
     if (!finalBarcode) finalBarcode = await generateUniqueBarcode(orgId);
@@ -283,7 +309,7 @@ export async function addProduct(
       sku = `${nameClean}-${finalBarcode.slice(-4)}`;
     }
     const q = query(collection(db, 'products'), where('org_id', '==', orgId), where('sku', '==', sku));
-    const existing = await getDocs(q);
+    const existing = await withTimeout(getDocs(q), 'Checking SKU uniqueness');
     if (!existing.empty) {
       sku = `${sku}-${Math.floor(10 + Math.random()*90)}`;
     }
@@ -306,15 +332,15 @@ export async function addProduct(
       org_id: orgId, 
       created_at: new Date().toISOString()
     };
-    await addDoc(collection(db, 'products'), newProd);
+    await withTimeout(addDoc(collection(db, 'products'), newProd), 'Saving product');
     const targetBranch = item.branch || 'Main Warehouse';
     const initQty = Number(item.quantity) || 0;
     const invDocId = `${orgId}_${sku}_${targetBranch.replace(/\s+/g, '_')}`;
-    await setDoc(doc(db, 'inventory', invDocId), { org_id: orgId, sku, branch: targetBranch, quantity: initQty, updated_at: new Date().toISOString() });
+    await withTimeout(setDoc(doc(db, 'inventory', invDocId), { org_id: orgId, sku, branch: targetBranch, quantity: initQty, updated_at: new Date().toISOString() }), 'Saving inventory');
     return { success: true, barcode: finalBarcode, sku };
   } catch (err: any) {
     console.error('addProduct error:', err);
-    return { success: false, error: err.message || 'Failed to save product.' };
+    return { success: false, error: friendlyError(err) };
   }
 }
 
@@ -326,10 +352,9 @@ export async function recordSale(sku: string, orgId: string, qty: number, branch
     const invRef = doc(db, 'inventory', invDocId);
 
     const q = query(collection(db, 'products'), where('org_id', '==', orgId), where('sku', '==', cleanSku));
-    const snap = await getDocs(q);
+    const snap = await withTimeout(getDocs(q), 'Finding product for sale');
 
-    await runTransaction(db, async (t) => {
-      // 1. Update product sales_count and last_sold_date
+    await withTimeout(runTransaction(db, async (t) => {
       if (!snap.empty) {
         const prodRef = snap.docs[0].ref;
         const prodDoc = await t.get(prodRef);
@@ -338,21 +363,19 @@ export async function recordSale(sku: string, orgId: string, qty: number, branch
           t.update(prodRef, { sales_count: curSales + qty, last_sold_date: new Date().toISOString() });
         }
       }
-
-      // 2. Decrement inventory quantity
       const invDoc = await t.get(invRef);
       if (invDoc.exists()) {
         const curQty = Number(invDoc.data().quantity) || 0;
         const newQty = Math.max(0, curQty - qty);
         t.update(invRef, { quantity: newQty, updated_at: new Date().toISOString() });
       }
-    });
+    }), 'Recording sale');
 
-    await addDoc(collection(db, 'activity_logs'), {
+    await withTimeout(addDoc(collection(db, 'activity_logs'), {
       org_id: orgId,
       action: `POS Sale: -${qty} units of ${cleanSku}`,
       timestamp: new Date().toISOString()
-    });
+    }), 'Logging sale');
   } catch(e) {
     console.log('recordSale error', e);
   }
@@ -364,14 +387,14 @@ export async function scanIntake(sku: string, name: string, quantity: number, br
     const qty = Number(quantity) || 1;
     const targetBranch = branch || 'Main Warehouse';
     const prodQ = query(collection(db, 'products'), where('org_id', '==', orgId), where('sku', '==', cleanSku));
-    const prodSnap = await getDocs(prodQ);
+    const prodSnap = await withTimeout(getDocs(prodQ), 'Finding product for intake');
     if (prodSnap.empty) {
       const autoBarcode = await generateUniqueBarcode(orgId);
-      await addDoc(collection(db, 'products'), { sku: cleanSku, name: name || `Product ${cleanSku}`, category: 'General', price: 0, cost: 0, safety_stock: 10, barcode: autoBarcode, org_id: orgId, created_at: new Date().toISOString() });
+      await withTimeout(addDoc(collection(db, 'products'), { sku: cleanSku, name: name || `Product ${cleanSku}`, category: 'General', price: 0, cost: 0, safety_stock: 10, barcode: autoBarcode, org_id: orgId, created_at: new Date().toISOString() }), 'Creating product for intake');
     }
     const invDocId = `${orgId}_${cleanSku}_${targetBranch.replace(/\s+/g, '_')}`;
     const invRef = doc(db, 'inventory', invDocId);
-    await runTransaction(db, async (transaction) => {
+    await withTimeout(runTransaction(db, async (transaction) => {
       const invDoc = await transaction.get(invRef);
       if (!invDoc.exists()) {
         transaction.set(invRef, { org_id: orgId, sku: cleanSku, branch: targetBranch, quantity: qty, updated_at: new Date().toISOString() });
@@ -379,12 +402,12 @@ export async function scanIntake(sku: string, name: string, quantity: number, br
         const currentQty = Number(invDoc.data().quantity) || 0;
         transaction.update(invRef, { quantity: currentQty + qty, updated_at: new Date().toISOString() });
       }
-    });
-    await addDoc(collection(db, 'activity_logs'), { org_id: orgId, action: `Barcode Intake: +${qty} of ${cleanSku} at ${targetBranch}`, timestamp: new Date().toISOString() });
+    }), 'Updating inventory for intake');
+    await withTimeout(addDoc(collection(db, 'activity_logs'), { org_id: orgId, action: `Barcode Intake: +${qty} of ${cleanSku} at ${targetBranch}`, timestamp: new Date().toISOString() }), 'Logging intake');
     return { success: true, message: `Added ${qty} units of ${cleanSku} to ${targetBranch}.` };
   } catch (err: any) {
     console.error('scanIntake error:', err);
-    return { success: false, message: err.message || 'Intake failed.' };
+    return { success: false, message: friendlyError(err) };
   }
 }
 
@@ -427,7 +450,7 @@ export async function getDashboardSummary(orgId: string): Promise<{ totalProduct
 export async function getReorders(orgId: string): Promise<PurchaseOrder[]> {
   try {
     const q = query(collection(db, 'purchase_orders'), where('org_id', '==', orgId));
-    const snap = await getDocs(q);
+    const snap = await withTimeout(getDocs(q), 'Loading reorders');
     const pos: PurchaseOrder[] = [];
     snap.forEach(d => { pos.push({ id: d.id, ...d.data() } as PurchaseOrder); });
     return pos;
@@ -437,7 +460,7 @@ export async function getReorders(orgId: string): Promise<PurchaseOrder[]> {
 export async function approvePO(poId: string, orgId: string): Promise<{ success: boolean; error?: string }> {
   try {
     const poRef = doc(db, 'purchase_orders', poId);
-    await runTransaction(db, async (transaction) => {
+    await withTimeout(runTransaction(db, async (transaction) => {
       const poDoc = await transaction.get(poRef);
       if (!poDoc.exists()) throw new Error('Purchase Order does not exist.');
       const poData = poDoc.data() as PurchaseOrder;
@@ -452,10 +475,10 @@ export async function approvePO(poId: string, orgId: string): Promise<{ success:
         const curQty = Number(invDoc.data().quantity) || 0;
         transaction.update(invRef, { quantity: curQty + poData.quantity, updated_at: new Date().toISOString() });
       }
-    });
-    await addDoc(collection(db, 'activity_logs'), { org_id: orgId, action: `Approved Purchase Order ${poId}`, timestamp: new Date().toISOString() });
+    }), 'Approving purchase order');
+    await withTimeout(addDoc(collection(db, 'activity_logs'), { org_id: orgId, action: `Approved Purchase Order ${poId}`, timestamp: new Date().toISOString() }), 'Logging PO approval');
     return { success: true };
-  } catch (err: any) { return { success: false, error: err.message }; }
+  } catch (err: any) { return { success: false, error: friendlyError(err) }; }
 }
 
 export async function approveRedistribution(sku: string, sourceBranch: string, targetBranch: string, quantity: number, orgId: string): Promise<{ success: boolean; error?: string }> {
@@ -469,7 +492,7 @@ export async function approveRedistribution(sku: string, sourceBranch: string, t
     const srcRef = doc(db, 'inventory', srcInvId);
     const tgtRef = doc(db, 'inventory', tgtInvId);
     
-    await runTransaction(db, async (transaction) => {
+    await withTimeout(runTransaction(db, async (transaction) => {
       const srcDoc = await transaction.get(srcRef);
       const tgtDoc = await transaction.get(tgtRef);
       if (!srcDoc.exists()) throw new Error(`No stock found for SKU ${cleanSku} at ${sourceBranch}.`);
@@ -482,13 +505,13 @@ export async function approveRedistribution(sku: string, sourceBranch: string, t
         const tgtQty = Number(tgtDoc.data().quantity) || 0;
         transaction.update(tgtRef, { quantity: tgtQty + qty, updated_at: new Date().toISOString() });
       }
-    });
+    }), 'Approving redistribution');
     
-    await addDoc(collection(db, 'redistributions'), { org_id: orgId, sku: cleanSku, source_branch: sourceBranch, target_branch: targetBranch, transfer_qty: qty, status: 'Completed', timestamp: new Date().toISOString() });
-    await addDoc(collection(db, 'activity_logs'), { org_id: orgId, action: `Redistributed ${qty} units of ${cleanSku} from ${sourceBranch} to ${targetBranch}`, timestamp: new Date().toISOString() });
+    await withTimeout(addDoc(collection(db, 'redistributions'), { org_id: orgId, sku: cleanSku, source_branch: sourceBranch, target_branch: targetBranch, transfer_qty: qty, status: 'Completed', timestamp: new Date().toISOString() }), 'Logging redistribution');
+    await withTimeout(addDoc(collection(db, 'activity_logs'), { org_id: orgId, action: `Redistributed ${qty} units of ${cleanSku} from ${sourceBranch} to ${targetBranch}`, timestamp: new Date().toISOString() }), 'Logging redistribution activity');
     return { success: true };
   } catch (err: any) { 
-    return { success: false, error: err.message }; 
+    return { success: false, error: friendlyError(err) }; 
   }
 }
 
