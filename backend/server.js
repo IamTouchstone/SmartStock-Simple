@@ -1,0 +1,132 @@
+// SmartStock Phase 2 — Vercel Orchestrator
+// Single server: POST /api/agent only. No db.json, no emailService.
+// Firestore is source of truth. Firebase Admin bypasses firestore.rules,
+// so we re-enforce sameOrg() in code on every request.
+
+const express = require('express');
+const cors = require('cors');
+const admin = require('firebase-admin');
+
+const app = express();
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+
+// --- Firebase Admin ---
+if (!admin.apps.length) {
+  const svc = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '{}');
+  if (!svc.project_id) {
+    console.warn('[SmartStock] FIREBASE_SERVICE_ACCOUNT_JSON not set - /api/agent will 500');
+  } else {
+    admin.initializeApp({ credential: admin.credential.cert(svc) });
+  }
+}
+const db = admin.apps.length ? admin.firestore() : null;
+
+// --- Helpers ---
+async function verifyUser(req) {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (!token) throw new Error('NO_TOKEN');
+  const decoded = await admin.auth().verifyIdToken(token);
+  const snap = await db.collection('users').doc(decoded.uid).get();
+  if (!snap.exists) throw new Error('NO_PROFILE');
+  const profile = snap.data();
+  const org_id = profile.org_id || '';
+  const role = profile.role || 'Staff';
+  if (!org_id) throw new Error('NO_ORG');
+  return { uid: decoded.uid, org_id, role, email: decoded.email || '' };
+}
+
+async function callGroq(messages) {
+  const key = process.env.GROQ_API_KEY || '';
+  if (!key) throw new Error('NO_GROQ_KEY');
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages,
+      temperature: 0.2,
+      max_tokens: 1200,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || 'GROQ_FAILED');
+  return data.choices?.[0]?.message?.content || '';
+}
+
+async function callGemini(messages) {
+  const key = process.env.GEMINI_API_KEY || '';
+  if (!key) throw new Error('NO_GEMINI_KEY');
+  const prompt = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || 'GEMINI_FAILED');
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// --- Routes ---
+app.get('/', (req, res) => res.json({ ok: true, service: 'smartstock-phase2', time: new Date().toISOString() }));
+app.get('/api/health', (req, res) => res.json({ ok: true, hasFirestore: !!db }));
+
+app.post('/api/agent', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ ok: false, error: 'SERVER_NOT_CONFIGURED' });
+    const user = await verifyUser(req);
+    const { message = '', history = [] } = req.body || {};
+    if (!message.trim()) return res.status(400).json({ ok: false, error: 'EMPTY_MESSAGE' });
+
+    // Org-scoped context: NEVER return data from another org.
+    // Only fetch counts + recent sales for this org_id.
+    const [prodSnap, invSnap, salesSnap] = await Promise.all([
+      db.collection('products').where('org_id', '==', user.org_id).limit(20).get(),
+      db.collection('inventory').where('org_id', '==', user.org_id).limit(20).get(),
+      db.collection('sales').where('org_id', '==', user.org_id).orderBy('created_at', 'desc').limit(10).get(),
+    ]);
+    const context = {
+      org_id: user.org_id,
+      role: user.role,
+      products: prodSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+      inventory: invSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+      recentSales: salesSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+    };
+
+    const system = `You are SmartStock Agent for org ${user.org_id}. User role: ${user.role}. Answer using ONLY the org context below. Never invent products, prices, or stock. If data is missing, say so. Keep answers short, actionable. Context: ${JSON.stringify(context).slice(0, 8000)}`;
+    const messages = [
+      { role: 'system', content: system },
+      ...history.slice(-10),
+      { role: 'user', content: message },
+    ];
+
+    let reply = '';
+    let provider = 'groq';
+    try { reply = await callGroq(messages); }
+    catch (e) {
+      console.warn('[Agent] Groq failed, fallback Gemini:', e.message);
+      provider = 'gemini';
+      reply = await callGemini(messages);
+    }
+
+    // Log append-only, org-scoped
+    await db.collection('activity_logs').add({
+      org_id: user.org_id, uid: user.uid, type: 'AGENT_CHAT',
+      message: message.slice(0, 500), provider, created_at: new Date().toISOString(),
+    });
+
+    return res.json({ ok: true, reply, provider, org_id: user.org_id });
+  } catch (e) {
+    if (e.message === 'NO_TOKEN') return res.status(401).json({ ok: false, error: 'NO_TOKEN' });
+    if (e.message === 'NO_PROFILE' || e.message === 'NO_ORG') return res.status(403).json({ ok: false, error: e.message });
+    console.error('[Agent] error:', e);
+    return res.status(500).json({ ok: false, error: 'AGENT_FAILED' });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+if (process.env.VERCEL !== '1') app.listen(PORT, () => console.log(`SmartStock Phase 2 on :${PORT}`));
+module.exports = app;
