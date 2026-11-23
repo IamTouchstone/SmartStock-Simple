@@ -11,16 +11,34 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// --- Firebase Admin ---
-if (!admin.apps.length) {
-  const svc = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '{}');
-  if (!svc.project_id) {
-    console.warn('[SmartStock] FIREBASE_SERVICE_ACCOUNT_JSON not set - /api/agent will 500');
+// --- Firebase Admin (never crash on startup) ---
+let db = null;
+try {
+  if (!admin.apps.length) {
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '';
+    if (!raw) {
+      console.warn('[SmartStock] FIREBASE_SERVICE_ACCOUNT_JSON not set - /api/agent will 500, /api/health will still work');
+    } else {
+      const svc = JSON.parse(raw);
+      // Vercel env vars escape newlines as \\n - fix them
+      if (svc.private_key) {
+        svc.private_key = svc.private_key.replace(/\\n/g, '\n');
+      }
+      if (!svc.project_id || !svc.private_key || !svc.client_email) {
+        console.warn('[SmartStock] FIREBASE_SERVICE_ACCOUNT_JSON incomplete - missing project_id / private_key / client_email');
+      } else {
+        admin.initializeApp({ credential: admin.credential.cert(svc) });
+        db = admin.firestore();
+        console.log('[SmartStock] Firestore connected:', svc.project_id);
+      }
+    }
   } else {
-    admin.initializeApp({ credential: admin.credential.cert(svc) });
+    db = admin.firestore();
   }
+} catch (e) {
+  console.error('[SmartStock] Firebase init failed, continuing without DB:', e.message);
+  db = null;
 }
-const db = admin.apps.length ? admin.firestore() : null;
 
 // --- Helpers ---
 async function verifyUser(req) {
@@ -72,7 +90,7 @@ async function callGemini(messages) {
 
 // --- Routes ---
 app.get('/', (req, res) => res.json({ ok: true, service: 'smartstock-phase2', time: new Date().toISOString() }));
-app.get('/api/health', (req, res) => res.json({ ok: true, hasFirestore: !!db }));
+app.get('/api/health', (req, res) => res.json({ ok: true, hasFirestore: !!db, hasGroq: !!process.env.GROQ_API_KEY, hasGemini: !!process.env.GEMINI_API_KEY }));
 
 app.post('/api/agent', async (req, res) => {
   try {
@@ -82,7 +100,6 @@ app.post('/api/agent', async (req, res) => {
     if (!message.trim()) return res.status(400).json({ ok: false, error: 'EMPTY_MESSAGE' });
 
     // Org-scoped context: NEVER return data from another org.
-    // Only fetch counts + recent sales for this org_id.
     const [prodSnap, invSnap, salesSnap] = await Promise.all([
       db.collection('products').where('org_id', '==', user.org_id).limit(20).get(),
       db.collection('inventory').where('org_id', '==', user.org_id).limit(20).get(),
@@ -112,7 +129,6 @@ app.post('/api/agent', async (req, res) => {
       reply = await callGemini(messages);
     }
 
-    // Log append-only, org-scoped
     await db.collection('activity_logs').add({
       org_id: user.org_id, uid: user.uid, type: 'AGENT_CHAT',
       message: message.slice(0, 500), provider, created_at: new Date().toISOString(),
