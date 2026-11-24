@@ -88,9 +88,49 @@ async function callGemini(messages) {
   return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
+// --- Tavily Web Search ---
+async function webSearch(query) {
+  const key = process.env.TAVILY_API_KEY || '';
+  if (!key) return '';
+  try {
+    const res = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: key,
+        query,
+        search_depth: 'basic',
+        max_results: 5,
+        include_answer: true,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.warn('[SmartStock] Tavily failed:', data?.detail || res.status);
+      return '';
+    }
+    const parts = [];
+    if (data.answer) parts.push(`Web Answer: ${data.answer}`);
+    if (Array.isArray(data.results)) {
+      for (const r of data.results.slice(0, 5)) {
+        parts.push(`- ${r.title || ''}: ${r.content || ''} (${r.url || ''})`);
+      }
+    }
+    return parts.join('\n').slice(0, 4000);
+  } catch (e) {
+    console.warn('[SmartStock] Tavily error:', e.message);
+    return '';
+  }
+}
+
+function needsWebSearch(message) {
+  const m = message.toLowerCase();
+  return /price|market|current|today|latest|news|naira|dollar|exchange|rate|supplier|lagos|nigeria|online|internet|web|search|google|what is|who is|trending/.test(m);
+}
+
 // --- Routes ---
 app.get('/', (req, res) => res.json({ ok: true, service: 'smartstock-phase2', time: new Date().toISOString() }));
-app.get('/api/health', (req, res) => res.json({ ok: true, hasFirestore: !!db, hasGroq: !!process.env.GROQ_API_KEY, hasGemini: !!process.env.GEMINI_API_KEY }));
+app.get('/api/health', (req, res) => res.json({ ok: true, hasFirestore: !!db, hasGroq: !!process.env.GROQ_API_KEY, hasGemini: !!process.env.GEMINI_API_KEY, hasTavily: !!process.env.TAVILY_API_KEY }));
 
 app.post('/api/agent', async (req, res) => {
   try {
@@ -113,7 +153,29 @@ app.post('/api/agent', async (req, res) => {
       recentSales: salesSnap.docs.map(d => ({ id: d.id, ...d.data() })),
     };
 
-    const system = `You are SmartStock Agent for org ${user.org_id}. User role: ${user.role}. Answer using ONLY the org context below. Never invent products, prices, or stock. If data is missing, say so. Keep answers short, actionable. Context: ${JSON.stringify(context).slice(0, 8000)}`;
+    // Web search only when needed - never leaks org data to Tavily, only the user's question
+    let webContext = '';
+    let usedWebSearch = false;
+    if (needsWebSearch(message)) {
+      webContext = await webSearch(message);
+      usedWebSearch = !!webContext;
+    }
+
+    const system = `You are SmartStock Agent for org ${user.org_id}. User role: ${user.role}.
+
+CREATOR: SmartStock was created by Anagbaoso Chukwuebuka Bernie, also known as Touchstone.
+Pronunciation: Ah-nah-BAH-oh-so Chook-woo-eh-BOO-kah BER-nie.
+If asked who created / built / founded SmartStock, answer with his full name and that pronunciation. Never claim anyone else created it.
+
+RULES:
+- For internal business questions (products, prices in YOUR store, stock, sales), answer using ONLY the org context below. Never invent products, prices, or stock. If data is missing, say so.
+- For external / current-world questions (market prices, exchange rate, news, suppliers, general knowledge), use the Web Search Results below if present. Clearly say when info is from the web.
+- Never mix them: do NOT present web prices as your store's prices.
+- Keep answers short, actionable.
+
+Org Context: ${JSON.stringify(context).slice(0, 8000)}
+
+${usedWebSearch ? `Web Search Results:\n${webContext}` : 'Web Search Results: none (question was internal only).'}`;
     const messages = [
       { role: 'system', content: system },
       ...history.slice(-10),
@@ -131,10 +193,10 @@ app.post('/api/agent', async (req, res) => {
 
     await db.collection('activity_logs').add({
       org_id: user.org_id, uid: user.uid, type: 'AGENT_CHAT',
-      message: message.slice(0, 500), provider, created_at: new Date().toISOString(),
+      message: message.slice(0, 500), provider, usedWebSearch, created_at: new Date().toISOString(),
     });
 
-    return res.json({ ok: true, reply, provider, org_id: user.org_id });
+    return res.json({ ok: true, reply, provider, usedWebSearch, org_id: user.org_id });
   } catch (e) {
     if (e.message === 'NO_TOKEN') return res.status(401).json({ ok: false, error: 'NO_TOKEN' });
     if (e.message === 'NO_PROFILE' || e.message === 'NO_ORG') return res.status(403).json({ ok: false, error: e.message });
